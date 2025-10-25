@@ -33,3 +33,5 @@ env/
 # Test files
 test-output/
 *.test.log
+
+.claude/settings.local.json
