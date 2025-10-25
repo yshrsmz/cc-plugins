@@ -10,29 +10,19 @@
   },
   "plugins": [
     {
-      "name": "hello-command",
-      "source": "./plugins/hello-command",
-      "description": "A simple example slash command that greets the user"
-    },
-    {
-      "name": "format-json",
-      "source": "./plugins/format-json",
-      "description": "Slash command to format JSON files with proper indentation"
-    },
-    {
-      "name": "session-logger",
-      "source": "./plugins/session-logger",
-      "description": "Example hook that logs session start and end events"
-    },
-    {
-      "name": "minimal-style",
-      "source": "./plugins/minimal-style",
-      "description": "A clean, minimal output style with subtle colors"
-    },
-    {
       "name": "base",
       "source": "./plugins/base",
       "description": "Base plugin providing essential commands and hooks"
+    },
+    {
+      "name": "codex-mcp",
+      "source": "./plugins/codex",
+      "description": "Codex MCP integration plugin"
+    },
+    {
+      "name": "serena-mcp",
+      "source": "./plugins/serena",
+      "description": "Serena MCP integration plugin"
     }
   ]
 }

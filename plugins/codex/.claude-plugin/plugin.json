@@ -1,0 +1,9 @@
+{
+    "name": "codex-mcp",
+    "version": "1.0.0",
+    "description": "Codex MCP integration plugin",
+    "author": {
+        "name": "yshrsmz",
+        "email": "the.phantom.bane+github@gmail.com"
+    }
+}
