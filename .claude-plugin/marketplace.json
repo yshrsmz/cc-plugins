@@ -28,6 +28,11 @@
       "name": "minimal-style",
       "source": "./plugins/minimal-style",
       "description": "A clean, minimal output style with subtle colors"
+    },
+    {
+      "name": "base",
+      "source": "./plugins/base",
+      "description": "Base plugin providing essential commands and hooks"
     }
   ]
 }
