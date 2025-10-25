@@ -105,40 +105,6 @@ plugins/your-hook/
 }
 ```
 
-### Output Styles
-
-Custom color schemes and formatting.
-
-**Structure:**
-```
-plugins/your-style/
-├── plugin.json
-├── README.md
-└── style.json         # Style definition
-```
-
-**style.json example:**
-```json
-{
-  "name": "Your Style",
-  "description": "Style description",
-  "styles": {
-    "assistant": {
-      "color": "#E0E0E0",
-      "bold": false
-    },
-    "user": {
-      "color": "#A0A0A0",
-      "bold": true
-    },
-    "error": {
-      "color": "#FF6B6B",
-      "bold": true
-    }
-  }
-}
-```
-
 ### MCP Servers
 
 Model Context Protocol servers that extend Claude Code capabilities.

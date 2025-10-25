@@ -24,18 +24,40 @@ Install a plugin:
 
 ## Available Plugins
 
-### Slash Commands
+### base
+Essential commands and hooks for common workflows.
 
-- **hello-command** - Simple greeting command with fun tech facts
-- **format-json** - Format all JSON files in your project with consistent indentation
+**Commands:**
+- `/check-pr` - Automated PR review comment analysis and issue resolution workflow
+  - Fetches review comments using `gh` commands
+  - Analyzes feedback from copilot, claude, and reviewers
+  - Creates individual commits for each fix
+  - Verifies build/test/lint after changes
 
-### Hooks
+**Hooks:**
+- SessionStart - Injects current date/time context automatically
 
-- **session-logger** - Log session start and end events to track Claude Code usage
+**MCP Servers:**
+- Sequential Thinking - Enhanced reasoning capabilities for complex problems
 
-### Output Styles
+### codex-mcp
+Codex MCP integration for comprehensive code reviews.
 
-- **minimal-style** - Clean, minimal output style with subtle colors
+**Commands:**
+- `/codex-review` - In-depth code review workflow with Codex
+  - Analyzes staged and unstaged changes via git
+  - Checks architecture compliance (MVI patterns, clean architecture)
+  - Reviews code quality, testing coverage, and Android best practices
+  - Provides actionable feedback with specific file/line references
+
+**MCP Servers:**
+- Codex - Code analysis and review capabilities
+
+### serena-mcp
+Serena MCP integration for IDE assistance.
+
+**MCP Servers:**
+- Serena - IDE assistant providing project context and insights
 
 ## Plugin Categories
 
@@ -45,11 +67,13 @@ Custom commands that can be invoked with `/` in Claude Code to automate workflow
 ### 🪝 Hooks
 Event-driven shell commands that execute in response to Claude Code events (SessionStart, PreToolUse, UserPromptSubmit, etc.).
 
-### 🎨 Output Styles
-Custom formatting styles to personalize Claude Code's appearance.
-
 ### 🔌 MCP Servers
-Model Context Protocol servers that extend Claude Code with new tools and integrations. *(Coming soon)*
+Model Context Protocol servers that extend Claude Code with new tools and integrations.
+
+Available MCP integrations:
+- **Sequential Thinking** (base plugin) - Enhanced reasoning for complex problems
+- **Codex** (codex-mcp plugin) - Code analysis and review capabilities
+- **Serena** (serena-mcp plugin) - IDE assistant with project context
 
 ### 🛠️ Skills
 Specialized capabilities that provide domain knowledge and workflows. *(Coming soon)*

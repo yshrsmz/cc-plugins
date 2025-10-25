@@ -1,0 +1,9 @@
+{
+    "name": "base",
+    "version": "1.0.0",
+    "description": "Base plugin for common functionality",
+    "author": {
+        "name": "yshrsmz",
+        "email": "the.phantom.bane+github@gmail.com"
+    }
+}
