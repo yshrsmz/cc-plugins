@@ -1,0 +1,39 @@
+{
+  "name": "Minimal",
+  "description": "Clean and minimal output style with subtle colors",
+  "styles": {
+    "assistant": {
+      "color": "#E0E0E0",
+      "bold": false
+    },
+    "user": {
+      "color": "#A0A0A0",
+      "bold": true
+    },
+    "system": {
+      "color": "#808080",
+      "italic": true
+    },
+    "error": {
+      "color": "#FF6B6B",
+      "bold": true
+    },
+    "success": {
+      "color": "#4ECDC4"
+    },
+    "warning": {
+      "color": "#FFE66D"
+    },
+    "info": {
+      "color": "#95E1D3"
+    },
+    "code": {
+      "color": "#C7C7C7",
+      "background": "#1A1A1A"
+    },
+    "link": {
+      "color": "#6C9BCF",
+      "underline": true
+    }
+  }
+}
