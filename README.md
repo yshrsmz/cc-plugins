@@ -4,23 +4,98 @@ A community-driven marketplace for Claude Code extensions and plugins.
 
 ## Quick Start
 
-Add this marketplace to your Claude Code:
+### 1. マーケットプレースを追加する
+
+#### グローバル（User scope）
+
+自分の全プロジェクトでこのマーケットプレースを利用できるようにします。
 
 ```bash
 /plugin marketplace add yshrsmz/cc-plugins
 ```
 
-Browse available plugins:
+#### プロジェクトローカル（Project scope）
 
-```bash
-/plugin list
+リポジトリの `.claude/settings.json` に `extraKnownMarketplaces` を追加します。チームメンバーがリポジトリを trust すると、マーケットプレースとプラグインのインストールを促すプロンプトが表示されます。
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "yshrsmz-cc-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "yshrsmz/cc-plugins"
+      }
+    }
+  }
+}
 ```
 
-Install a plugin:
+必要に応じて `enabledPlugins` も一緒に設定できます:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "yshrsmz-cc-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "yshrsmz/cc-plugins"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "base@yshrsmz-cc-plugins": true
+  }
+}
+```
+
+### 2. プラグインをインストールする
+
+プラグインのインストールには3つのスコープがあります。用途に応じて使い分けてください。
+
+#### グローバル（User scope）
+
+全プロジェクトで使えるようにインストールします。`--scope` を省略した場合のデフォルトです。
+
+Claude Code 内から:
 
 ```bash
-/plugin install <plugin-name>
+/plugin install <plugin-name>@yshrsmz-cc-plugins
 ```
+
+ターミナルから:
+
+```bash
+claude plugin install <plugin-name>@yshrsmz-cc-plugins
+# または明示的にスコープを指定
+claude plugin install <plugin-name>@yshrsmz-cc-plugins --scope user
+```
+
+#### プロジェクトローカル（Project scope）
+
+特定のリポジトリの全コラボレーターに共有されます。`.claude/settings.json` に設定が追加されます。
+
+```bash
+claude plugin install <plugin-name>@yshrsmz-cc-plugins --scope project
+```
+
+#### 個人ローカル（Local scope）
+
+特定のリポジトリで自分だけが使えるようにインストールします。他のコラボレーターには共有されません。
+
+```bash
+claude plugin install <plugin-name>@yshrsmz-cc-plugins --scope local
+```
+
+### 3. プラグインを確認する
+
+インストール済みプラグインの確認:
+
+```bash
+/plugin
+```
+
+`Installed` タブでスコープごとにグループ化されたプラグイン一覧を確認できます。
 
 ## Available Plugins
 
