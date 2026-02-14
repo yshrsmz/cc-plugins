@@ -1,7 +1,7 @@
 {
-    "name": "codex-mcp",
+    "name": "android",
     "version": "1.0.0",
-    "description": "Codex MCP integration plugin",
+    "description": "Android development best practices, code generation, and debugging assistance",
     "author": {
         "name": "yshrsmz",
         "email": "the.phantom.bane+github@gmail.com"
