@@ -13,10 +13,21 @@
       "WebSearch",
       "Bash(gh issue view:*)"
     ],
+    "deny": [],
     "ask": [
-        "Bash(rm:*)",
-        "Bash(git push:*)"
-    ],
-    "deny": []
+      "Bash(rm:*)",
+      "Bash(git push:*)"
+    ]
+  },
+  "extraKnownMarketplaces": {
+    "yshrsmz-cc-plugins": {
+      "source": {
+        "source": "file",
+        "path": "./.claude-plugin/marketplace.json"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "github@yshrsmz-cc-plugins": true
   }
 }
