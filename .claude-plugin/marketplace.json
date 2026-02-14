@@ -5,25 +5,10 @@
     "email": "the.phantom.bane+github@gmail.com"
   },
   "metadata": {
-    "description": "Community-driven Claude Code plugin marketplace",
+    "description": "Claude Code plugin marketplace for yshrsmz's repositories",
     "version": "0.1.0"
   },
   "plugins": [
-    {
-      "name": "base",
-      "source": "./plugins/base",
-      "description": "Base plugin providing essential commands and hooks"
-    },
-    {
-      "name": "codex-mcp",
-      "source": "./plugins/codex",
-      "description": "Codex MCP integration plugin"
-    },
-    {
-      "name": "serena-mcp",
-      "source": "./plugins/serena",
-      "description": "Serena MCP integration plugin"
-    },
     {
       "name": "github",
       "source": "./plugins/github",
