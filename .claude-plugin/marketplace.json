@@ -1,14 +1,19 @@
 {
-  "name": "cc-plugins",
+  "name": "yshrsmz-cc-plugins",
   "owner": {
     "name": "yshrsmz",
     "email": "the.phantom.bane+github@gmail.com"
   },
   "metadata": {
     "description": "Claude Code plugin marketplace for yshrsmz's repositories",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "plugins": [
+    {
+      "name": "android",
+      "source": "./plugins/android",
+      "description": "Android development best practices, code generation, and debugging assistance"
+    },
     {
       "name": "github",
       "source": "./plugins/github",

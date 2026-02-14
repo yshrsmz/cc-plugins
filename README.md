@@ -31,7 +31,7 @@ A community-driven marketplace for Claude Code extensions and plugins.
 }
 ```
 
-必要に応じて `enabledPlugins` も一緒に設定できます:
+必要に応じて `enabledPlugins` も一緒に設定できます。`extraKnownMarketplaces` のキー名がプラグイン参照時のマーケットプレース識別名になります:
 
 ```json
 {
@@ -44,7 +44,7 @@ A community-driven marketplace for Claude Code extensions and plugins.
     }
   },
   "enabledPlugins": {
-    "base@yshrsmz-cc-plugins": true
+    "github@yshrsmz-cc-plugins": true
   }
 }
 ```
