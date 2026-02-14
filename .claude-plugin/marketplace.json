@@ -23,6 +23,11 @@
       "name": "serena-mcp",
       "source": "./plugins/serena",
       "description": "Serena MCP integration plugin"
+    },
+    {
+      "name": "github",
+      "source": "./plugins/github",
+      "description": "Git/GitHub safety rules and PR review workflows"
     }
   ]
 }
