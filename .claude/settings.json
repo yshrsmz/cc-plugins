@@ -4,7 +4,14 @@
       "Bash(mkdir:*)",
       "Bash(tree:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(mkdir:*)",
+      "Bash(tree:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "WebFetch(domain:docs.claude.com)",
+      "WebSearch",
+      "Bash(gh issue view:*)"
     ],
     "ask": [
         "Bash(rm:*)",
