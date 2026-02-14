@@ -1,0 +1,9 @@
+{
+    "name": "github",
+    "version": "1.0.0",
+    "description": "Git/GitHub safety rules and PR review workflows",
+    "author": {
+        "name": "yshrsmz",
+        "email": "the.phantom.bane+github@gmail.com"
+    }
+}
