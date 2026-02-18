@@ -16,6 +16,8 @@ description: Safe git operation guidelines. Use when performing any git operatio
 - NEVER chain git commands with `&&` or `;`. Always run each git command as a separate invocation
   - Chaining makes it impossible for the user to allow/deny individual operations (e.g., a chain containing `git push` forces the user to deny the entire chain)
   - Separate commands make each operation's intent clear and individually controllable
+- NEVER use the `-C` option with git commands (e.g., `git -C /some/path ...`). Always `cd` to the target directory first, or use absolute paths in arguments
+  - When the user is prompted to allow a `git -C` command and selects "Yes, and don't ask again for similar commands", it adds `Bash(git -C:*)` to `permissions.allow`, which matches ALL git commands — effectively bypassing permission checks for every git operation
 
 ## Commit Rules
 
