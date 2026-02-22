@@ -13,7 +13,9 @@
       "WebSearch",
       "Bash(gh issue view:*)"
     ],
-    "deny": [],
+    "deny": [
+      "Bash(git -C:*)"
+    ],
     "ask": [
       "Bash(rm:*)",
       "Bash(git push:*)"
