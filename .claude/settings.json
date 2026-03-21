@@ -24,8 +24,8 @@
   "extraKnownMarketplaces": {
     "yshrsmz-cc-plugins": {
       "source": {
-        "source": "file",
-        "path": "./.claude-plugin/marketplace.json"
+        "source": "github",
+        "repo": "yshrsmz/cc-plugins"
       }
     }
   },
