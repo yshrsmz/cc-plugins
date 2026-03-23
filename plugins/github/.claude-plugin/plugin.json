@@ -1,6 +1,6 @@
 {
     "name": "github",
-    "version": "1.4.0",
+    "version": "1.4.1",
     "description": "Git/GitHub safety rules and PR review workflows",
     "author": {
         "name": "yshrsmz",
