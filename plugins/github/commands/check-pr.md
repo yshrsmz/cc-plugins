@@ -13,13 +13,25 @@ If you don't understand which PR you should look into, ask user first.
 ### To get active inline code review comments (excluding minimized):
 
 ```bash
-gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments --paginate | jq -r '[.[] | select(.performed_via_github_app == null or (.performed_via_github_app.name == "GitHub Actions" | not)) | select(has("minimized_reason") | not)] | sort_by(.created_at) | reverse | .[] | "Created: " + .created_at + "\nFile: " + .path + "\nLine: " + (.line // .original_line | tostring) + "\nAuthor: " + .user.login + "\nComment: " + .body + "\n---"'
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments --paginate --jq '
+  [.[] | select(.performed_via_github_app == null or (.performed_via_github_app.name == "GitHub Actions" | not)) | select(has("minimized_reason") | not)]
+  | sort_by(.created_at) | reverse
+  | .[]
+  | "Created: \(.created_at)\nFile: \(.path)\nLine: \(.line // .original_line)\nAuthor: \(.user.login)\nComment: \(.body)\n---"
+'
 ```
 
 ### To get active review summaries (excluding minimized):
 
 ```bash
-gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate | jq -r '[.[] | select(has("body") and .body and (.body == "" | not) and (.body == null | not))] | group_by(.user.login) | map(sort_by(.submitted_at) | reverse | .[0]) | sort_by(.submitted_at) | reverse | .[] | "Submitted: " + .submitted_at + "\nReviewer: " + .user.login + "\nState: " + .state + "\nBody: " + .body + "\n---"'
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate --jq '
+  [.[] | select(has("body") and .body)]
+  | group_by(.user.login)
+  | map(sort_by(.submitted_at) | reverse | .[0])
+  | sort_by(.submitted_at) | reverse
+  | .[]
+  | "Submitted: \(.submitted_at)\nReviewer: \(.user.login)\nState: \(.state)\nBody: \(.body)\n---"
+'
 ```
 
 ### To get general PR comments:
@@ -53,16 +65,16 @@ Run these verification commands and report the counts:
 
 ```bash
 # Count inline comments (non-minimized)
-gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments --paginate | jq '[.[] | select(has("minimized_reason") | not)] | length'
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments --paginate --jq '[.[] | select(has("minimized_reason") | not)] | length'
 
 # List all reviewers who left inline comments
-gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments --paginate | jq '[.[] | select(has("minimized_reason") | not) | .user.login] | unique'
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments --paginate --jq '[.[] | select(has("minimized_reason") | not) | .user.login] | unique'
 
 # Count review summaries
-gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate | jq '[.[] | select(has("body") and .body and (.body == "" | not))] | group_by(.user.login) | length'
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate --jq '[.[] | select(has("body") and .body)] | group_by(.user.login) | length'
 
 # List all reviewers who left review summaries
-gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate | jq '[.[] | select(has("body") and .body and (.body == "" | not)) | .user.login] | unique'
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate --jq '[.[] | select(has("body") and .body)] | .user.login] | unique'
 ```
 
 ### Report format (MANDATORY):
