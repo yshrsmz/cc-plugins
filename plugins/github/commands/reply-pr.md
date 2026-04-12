@@ -79,8 +79,8 @@ For each comment evaluated in `/check-pr`, match it to its corresponding review 
 | # | File | Line | Author | Decision | Commit | Action |
 |---|------|------|--------|----------|--------|--------|
 | 1 | path/to/file.kt | 42 | reviewer1 | FIX NOW | abc1234 | Reply + Resolve |
-| 2 | path/to/file.kt | 100 | reviewer1 | SKIP | - | No action |
-| 3 | path/to/other.kt | 15 | reviewer2 | DEFER | - | No action |
+| 2 | path/to/file.kt | 100 | reviewer1 | SKIP | - | Reply only |
+| 3 | path/to/other.kt | 15 | reviewer2 | DEFER | - | Reply only |
 ```
 
 ### Verify before proceeding:
@@ -94,9 +94,9 @@ For each comment evaluated in `/check-pr`, match it to its corresponding review 
 
 ## 5. Execute replies and resolve - MANDATORY EXECUTION
 
-Process each **FIX NOW** comment one at a time.
+Process each comment one at a time based on its decision.
 
-### a. Reply to the comment:
+### a. FIX NOW — Reply and resolve:
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments/{comment_id}/replies \
@@ -105,7 +105,7 @@ gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments/{comment_id}/replies \
 {1-line summary of what was fixed}'
 ```
 
-### b. Resolve the thread:
+Then resolve the thread:
 
 ```bash
 gh api graphql -f query='
@@ -117,12 +117,27 @@ gh api graphql -f query='
 ' -f threadId='{thread_node_id}'
 ```
 
+### b. SKIP — Reply with reason (do NOT resolve):
+
+```bash
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments/{comment_id}/replies \
+  -f body='Skipped: {reason why this was skipped}'
+```
+
+### c. DEFER — Reply with reason (do NOT resolve):
+
+```bash
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments/{comment_id}/replies \
+  -f body='Deferred: {reason and linked task/issue}'
+```
+
 ### Rules:
 
 - **FIX NOW**: Reply with commit hash and fix summary, then resolve the thread
-- **SKIP / DEFER**: Do NOT reply or resolve. These threads remain open for further discussion
+- **SKIP**: Reply with skip reason. Do NOT resolve — leave for reviewer to close
+- **DEFER**: Reply with defer reason and linked task/issue. Do NOT resolve — leave for reviewer to close
 - **Already resolved**: Skip entirely (note in summary)
-- **Execution order**: Process one comment at a time (reply, then resolve)
+- **Execution order**: Process one comment at a time (reply first, then resolve if FIX NOW)
 - **Error handling**: Report failures but continue with remaining comments
 
 ## 6. Summary
@@ -132,8 +147,8 @@ After all operations complete, present a summary:
 ```
 ## Reply & Resolve Summary
 
-- Replied and resolved: X comments
-- Skipped (SKIP/DEFER): Y comments
+- Replied and resolved: X comments (FIX NOW)
+- Replied (not resolved): Y comments (SKIP/DEFER)
 - Already resolved: Z comments (skipped)
 - Failed: W comments (list details if any)
 ```
