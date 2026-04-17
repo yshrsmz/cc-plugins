@@ -148,10 +148,10 @@ module structure, and architectural patterns.
 
 ### 4. Launch Task Agent
 
-Use the `Agent` tool with the fully customized prompt:
+Spawn the subagent via the `Task` tool with the fully customized prompt:
 
 ```
-Tool: Agent
+Tool: Task
 Parameters:
 {
   "subagent_type": "[determined agent type from step 1]",
