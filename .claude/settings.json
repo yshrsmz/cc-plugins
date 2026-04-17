@@ -26,7 +26,8 @@
       "source": {
         "source": "github",
         "repo": "yshrsmz/cc-plugins"
-      }
+      },
+      "autoUpdate": true
     }
   },
   "enabledPlugins": {
