@@ -21,6 +21,10 @@
       "Bash(git push:*)"
     ]
   },
+  "enabledPlugins": {
+    "github@yshrsmz-cc-plugins": true,
+    "skill-creator@claude-plugins-official": true
+  },
   "extraKnownMarketplaces": {
     "yshrsmz-cc-plugins": {
       "source": {
@@ -29,8 +33,5 @@
       },
       "autoUpdate": true
     }
-  },
-  "enabledPlugins": {
-    "github@yshrsmz-cc-plugins": true
   }
 }
