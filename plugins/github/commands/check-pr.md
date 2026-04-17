@@ -206,6 +206,72 @@ After evaluating all comments, present your complete analysis to the user with:
 
 **Then wait for user confirmation before proceeding with fixes.**
 
+## 3.5. Propose preventive updates
+
+For each comment decided **FIX NOW** in step 3, assess whether a project rule / skill / doc update could prevent the same mistake from recurring on future edits.
+
+### Scope
+
+- Only **FIX NOW** comments are considered.
+- **SKIP** = false positive, **DEFER** = planned work — neither implies a recurring pattern worth preventing. Exclude both.
+
+### Heuristics for proposing an update
+
+Propose an entry only when **all three** are true:
+
+1. The fix revealed a **non-obvious fact** (config schema, library quirk, framework default, project convention).
+2. The same oversight would **plausibly recur** when editing a similar file or pattern.
+3. There is a **concise rule** that would have steered the AI away from the mistake.
+
+If any of the three is "no", skip that comment.
+
+### Target files
+
+Pick the location that best matches the nature of the rule:
+
+- `.claude/rules/*.md` — reference knowledge loaded automatically via globs (use when the rule applies to a specific file pattern)
+- `.claude/skills/*.md` — workflow / procedure that can be invoked (use when the rule is a multi-step process)
+- `CLAUDE.md` — project-wide always-on guidance (use sparingly; only for rules that apply everywhere)
+- `AGENTS.md` — agent-specific guidance
+- Other project-specific standards files (e.g. `CONTRIBUTING.md`, style guides)
+
+### Proposal table format
+
+Present a table of all proposed entries:
+
+```
+## Preventive Update Proposals
+
+| # | Review comment summary | Where to record | What to record | Rationale |
+|---|---|---|---|---|
+| 1 | Global `TooManyFunctions` bump instead of local suppress | `.claude/rules/detekt.md` (globs `detekt-config.yml`, `**/*ViewModel.kt`) | "Suppress TooManyFunctions locally on ViewModels; don't bump the global threshold" | Prevents future contributors from re-bumping the global config |
+```
+
+### Decision flow
+
+Ask the user **per-row** whether to add each proposal, using the same UX as the FIX NOW / DEFER / SKIP decision flow in step 3.
+
+- **ADD** — include this preventive update
+- **SKIP** — don't add this entry
+
+Proposed updates MUST be **concise and specific**, not generic best-practice dumps. If the rule cannot be expressed in 1–3 sentences, it is too vague to be useful.
+
+### When no updates are proposed
+
+If no comments meet all three heuristics, report:
+
+```
+## Preventive Update Proposals
+
+No preventive updates identified.
+```
+
+Then proceed to step 4.
+
+### Commit handling
+
+Approved entries land as **separate commits** scoped `docs(claude): ...` (or the project equivalent, e.g. `docs(rules): ...`). Do NOT bundle preventive updates with code fixes — they belong to different concerns and reviewers may want to evaluate them independently.
+
 ## 4. Create commits
 
 You MUST create one commit for each problem you fix.
