@@ -1,6 +1,6 @@
 ---
 name: agent-review
-description: Review code changes using Task agent with Android library expertise
+description: Review code changes in an Android project (app or library) using a Claude Code Task subagent. Discovers project context at runtime; agent type can be overridden via argument.
 disable-model-invocation: true
 argument-hint: "[agent-type]"
 ---
@@ -11,83 +11,114 @@ Review the current changes in the repository using Claude Code's Task agent for 
 
 ## Agent Type Selection
 
-**Default**: `android-library-reviewer` - Optimized for Android library development with expertise in:
-- API design and Java interoperability
-- SQLite patterns and thread safety
-- Kotlin idioms and best practices
-- Public API surface management
-- Testing strategies for Android libraries
+This plugin bundles two Android-specialized agents. Pick by project type.
 
-**Optional**: Pass a different agent type as argument: `$ARGUMENTS`
+**Default**: `android-compose-architect` — for Compose/MVVM app projects. Expertise in:
+- MVVM / clean architecture with Dagger Hilt
+- Jetpack Compose best practices, recomposition, StateFlow
+- Android lifecycle, coroutines
+- Testing (Robolectric, MockK, Turbine, Compose UI Testing)
 
-Available agent types:
-- `android-library-reviewer` (default) - Android library expert
-- `general-purpose` - General codebase review
-- `Explore` - Codebase exploration focus
+**For Android libraries**: `android-library-architect` — for libraries consumed by other apps. Expertise in:
+- Public API design and Java interop (@JvmStatic, @JvmOverloads, etc.)
+- Thread safety and resource management (SQLite, streams, executors)
+- Backwards compatibility and API surface management
+- Context/lifecycle safety for shared code
+
+**Other options** (pass as argument):
+- `general-purpose` — balanced coverage when neither specialist fits
+- `Explore` — codebase-structure-focused reviews
 
 ## Steps to Execute
 
-Follow the **Common Command Instructions** from [review-base.md](review-base.md), with these Task agent-specific customizations:
+Follow the **Common Command Instructions** from [review-base.md](review-base.md), with these Task agent-specific customizations.
 
 ### 1. Determine Agent Type
 - If `$ARGUMENTS` is provided, use that as the subagent type
-- Otherwise, default to `android-library-reviewer`
+- Otherwise, default to `android-compose-architect`
 
 ### 2. Follow Common Steps
 
-Execute steps 1-3 from the Common Command Instructions section in the template:
+Execute steps 1–3 from the Common Command Instructions section in the template:
 - Verify changes exist
-- Read project documentation (optional)
-- Gather current context
+- Discover project context (read CLAUDE.md, README, module layout — DO NOT hardcode project details)
+- Gather environment context (pwd, branch, main branch)
 
 ### 3. Generate Task Agent-Specific Prompt
 
-Read the guidelines from [review-base.md](review-base.md) and follow Step 4 (Generate Customized Prompt), using these Task agent-specific introduction templates:
+Read the guidelines from [review-base.md](review-base.md) and follow Step 4 (Generate Customized Prompt), using these Task agent-specific introduction templates. Substitute the discovered project values — do NOT leave placeholders literal, and do NOT invent project context you did not actually find.
 
-**Agent-Specific Introduction Templates:**
+**Introduction templates (all share the same tool-availability block):**
 
-**For android-library-reviewer:**
+Common tool availability block:
 ```
-You are an Android library development expert reviewing code changes
-for the Historian Android library.
-
-Your expertise includes:
-- API design and Java interoperability (@JvmStatic, @JvmOverloads, etc.)
-- SQLite patterns (transactions, statement management, threading)
-- Kotlin idioms and best practices
-- Thread safety (ExecutorService, @Volatile, synchronization)
-- Android context handling and lifecycle
-- Testing strategies (Robolectric, unit testing)
-
 You are running as a Claude Code Task agent with access to:
 - Bash commands (git, grep, find, etc.)
 - Read tool for examining files
 - All standard file operations
+```
+
+**For android-compose-architect:**
+```
+You are an Android architecture and Jetpack Compose expert reviewing code changes
+for [PROJECT_NAME] ([PROJECT_TYPE]).
+
+Your expertise includes:
+- MVVM architecture patterns with Dagger Hilt
+- Jetpack Compose best practices and performance optimization
+- Android lifecycle management and memory-leak prevention
+- Clean architecture principles (presentation, domain, data layers)
+- Kotlin coroutines and StateFlow for state management
+- Android testing strategies (Robolectric, MockK, Turbine, Compose UI Testing)
+
+<common tool availability block>
 
 Project context:
-- Working directory: [actual pwd output]
-- Current branch: [actual branch name]
-- Main branch: master
-- Architecture: Multi-module library (historian-core, historian-tree, sample)
-- Key classes: Historian (main API), HistorianTree (Timber adapter), LogWriter (persistence)
+- Working directory: [PROJECT_PATH]
+- Current branch: [BRANCH_NAME]
+- Main branch: [MAIN_BRANCH]
+- Architecture: [ARCHITECTURE_SUMMARY]   (omit if not discovered)
+
+Your task is to perform an Android-focused code review, paying special attention to
+Compose patterns, MVVM compliance, lifecycle issues, and architecture boundaries.
+```
+
+**For android-library-architect:**
+```
+You are an Android library architect reviewing code changes
+for [PROJECT_NAME] ([PROJECT_TYPE]).
+
+Your expertise includes:
+- Public API design and Java interoperability (@JvmStatic, @JvmOverloads, @JvmName)
+- Thread safety (ExecutorService, @Volatile, synchronization, immutable state)
+- Resource management (SQLite statements/transactions, Cursors, streams, use {})
+- Backwards compatibility and semantic versioning
+- Android context handling and lifecycle-safe entry points
+- Testing strategies (Robolectric, JVM unit tests, concurrent-path tests)
+
+<common tool availability block>
+
+Project context:
+- Working directory: [PROJECT_PATH]
+- Current branch: [BRANCH_NAME]
+- Main branch: [MAIN_BRANCH]
+- Architecture: [ARCHITECTURE_SUMMARY]   (omit if not discovered)
 
 Your task is to perform an Android library-focused code review, paying special attention to
-API design, Java interop, thread safety, and SQLite patterns.
+public API stability, Java interop, thread safety, and resource management.
 ```
 
 **For general-purpose:**
 ```
-You are an expert code reviewer analyzing code changes for the Historian Android library.
+You are an expert code reviewer analyzing code changes for [PROJECT_NAME] ([PROJECT_TYPE]).
 
-You are running as a Claude Code Task agent with access to:
-- Bash commands (git, grep, find, etc.)
-- Read tool for examining files
-- All standard file operations
+<common tool availability block>
 
 Project context:
-- Working directory: [actual pwd output]
-- Current branch: [actual branch name]
-- Main branch: master
+- Working directory: [PROJECT_PATH]
+- Current branch: [BRANCH_NAME]
+- Main branch: [MAIN_BRANCH]
+- Architecture: [ARCHITECTURE_SUMMARY]   (omit if not discovered)
 
 Your task is to perform a comprehensive code review covering code quality,
 architecture, testing, and potential issues.
@@ -95,18 +126,16 @@ architecture, testing, and potential issues.
 
 **For Explore:**
 ```
-You are a codebase exploration specialist reviewing code changes for the Historian
-Android library.
+You are a codebase exploration specialist reviewing code changes for
+[PROJECT_NAME] ([PROJECT_TYPE]).
 
-You are running as a Claude Code Task agent with access to:
-- Bash commands (git, grep, find, etc.)
-- Read tool for examining files
-- All standard file operations
+<common tool availability block>
 
 Project context:
-- Working directory: [actual pwd output]
-- Current branch: [actual branch name]
-- Main branch: master
+- Working directory: [PROJECT_PATH]
+- Current branch: [BRANCH_NAME]
+- Main branch: [MAIN_BRANCH]
+- Architecture: [ARCHITECTURE_SUMMARY]   (omit if not discovered)
 
 Your task is to review code changes with emphasis on code organization,
 module structure, and architectural patterns.
@@ -115,39 +144,39 @@ module structure, and architectural patterns.
 **Then complete the prompt by:**
 - Replacing `[AVAILABLE_READ_TOOL]` with "Read tool" in git analysis instructions
 - Including all template sections as per Common Command Instructions Step 4
-- Emphasizing review criteria based on agent type (see template section 5)
+- Emphasizing review criteria based on agent type AND project type (see template sections 4 and 5)
 
 ### 4. Launch Task Agent
 
-Use the `Task` tool with the fully customized prompt:
-
-**Note:** The Task tool invocation below uses the actual Claude Code API. The `subagent_type` parameter specifies which specialized agent to use, and `prompt` contains the complete customized review instructions generated in step 3.
+Use the `Agent` tool with the fully customized prompt:
 
 ```
-Tool: Task
+Tool: Agent
 Parameters:
 {
   "subagent_type": "[determined agent type from step 1]",
-  "description": "Review Android library code changes",
-  "prompt": "<fully customized prompt from step 3>",
-  "model": "sonnet"  // Optional: specify model; "sonnet" for thorough analysis, "haiku" for quick reviews
+  "description": "Review Android code changes",
+  "prompt": "<fully customized prompt from step 3>"
 }
 ```
 
 ### 5. Present Findings
 
-Present the results directly to the user with clear sections as specified in the template's Expected Output Format
+Present the results directly to the user with clear sections as specified in the template's Expected Output Format.
 
 ## Usage
 
 ```bash
-# Default: Use android-library-reviewer
+# Default: use android-compose-architect (Compose/MVVM apps)
 /agent-review
 
-# Use general-purpose agent
+# Android library review
+/agent-review android-library-architect
+
+# General-purpose review (fallback for non-standard projects)
 /agent-review general-purpose
 
-# Use Explore agent for codebase-focused review
+# Codebase-structure-focused review
 /agent-review Explore
 ```
 
