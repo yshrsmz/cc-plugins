@@ -1,6 +1,6 @@
 {
     "name": "android",
-    "version": "1.1.0",
+    "version": "1.2.0",
     "description": "Android development best practices, code generation, and debugging assistance",
     "author": {
         "name": "yshrsmz",
