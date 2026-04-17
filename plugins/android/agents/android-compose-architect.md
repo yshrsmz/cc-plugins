@@ -1,6 +1,7 @@
 ---
 name: android-compose-architect
 description: Use this agent when you need expert guidance on Android architecture decisions, Jetpack Compose implementation, or when designing clean, maintainable Android solutions. This includes creating new Compose UI components, refactoring existing code to modern patterns, establishing architectural boundaries, or making decisions about state management, dependency injection, and testing strategies in Android projects. <example>Context: The user is working on an Android project and needs to implement a new feature using Jetpack Compose. user: "I need to create a new screen for user profile settings" assistant: "I'll use the android-compose-architect agent to design a clean, maintainable solution using Jetpack Compose." <commentary>Since this involves creating new Compose UI and requires architectural decisions, the android-compose-architect agent is the appropriate choice.</commentary></example> <example>Context: The user wants to refactor an existing Android screen to use modern patterns. user: "This fragment is getting too complex, can we improve its architecture?" assistant: "Let me engage the android-compose-architect agent to analyze the current implementation and propose a cleaner architecture using modern Android patterns." <commentary>Architectural refactoring and modernization is a core responsibility of the android-compose-architect agent.</commentary></example>
+tools: Read, Grep, Glob
 model: opus
 ---
 
