@@ -1,9 +1,8 @@
 {
     "name": "github",
-    "version": "1.9.0",
+    "version": "1.9.1",
     "description": "Git/GitHub safety rules and PR review workflows",
     "author": {
-        "name": "yshrsmz",
-        "email": "the.phantom.bane+github@gmail.com"
+        "name": "yshrsmz"
     }
 }
