@@ -1,6 +1,7 @@
 ---
 name: git-operations
-description: Safe git operation guidelines. Use when performing any git operations including commits, branching, merging, rebasing, pushing, pull request creation, or any other git-related tasks.
+description: >-
+  Safe git operation guidelines. Use when performing any git operations including commits, branching, merging, rebasing, pushing, pull request creation, or any other git-related tasks.
 ---
 
 # Git Operations Safety Guidelines

@@ -1,6 +1,7 @@
 ---
 name: agent-review
-description: Review code changes in an Android project (app or library) using a Claude Code Task subagent. Discovers project context at runtime; agent type can be overridden via argument.
+description: >-
+  Review code changes in an Android project (app or library) using a Claude Code Task subagent. Discovers project context at runtime; agent type can be overridden via argument.
 disable-model-invocation: true
 argument-hint: "[agent-type]"
 ---

@@ -1,6 +1,7 @@
 ---
 name: review-pr-bugs
-description: PR の差分からバグ・セキュリティ問題を検出するレビューエージェント
+description: >-
+  PR の差分からバグ・セキュリティ問題を検出するレビューエージェント
 tools: Read, Grep, Glob
 model: opus
 ---

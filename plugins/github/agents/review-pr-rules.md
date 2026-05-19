@@ -1,6 +1,7 @@
 ---
 name: review-pr-rules
-description: PR の差分がプロジェクト規約（CLAUDE.md / .claude/rules/）に準拠しているかチェックするレビューエージェント
+description: >-
+  PR の差分がプロジェクト規約（CLAUDE.md / .claude/rules/）に準拠しているかチェックするレビューエージェント
 tools: Read, Grep, Glob
 model: sonnet
 ---

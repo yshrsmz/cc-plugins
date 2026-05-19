@@ -1,6 +1,7 @@
 ---
 name: codex-review
-description: Review code changes in an Android project (app or library) using the Codex MCP server. Discovers project context at runtime.
+description: >-
+  Review code changes in an Android project (app or library) using the Codex MCP server. Discovers project context at runtime.
 disable-model-invocation: true
 ---
 
