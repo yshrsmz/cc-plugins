@@ -1,6 +1,7 @@
 ---
 name: renovate-pr-review
-description: Renovate (や Dependabot) が作成した依存更新 PR を対象に、各パッケージの changelog を並列調査し、破壊的変更への追随・新 API の採用判断・関連ファイルの同期更新までを行う。npm/pnpm/yarn・Cargo・Gradle/Maven・GitHub Actions の manifest を自動検出し、プロジェクトの実行基盤（CLAUDE.md / CI 設定）に従ってビルドとテストを走らせる。「この Renovate PR 見て」「依存更新 PR 対応して」「bump 系 PR の中身チェック」といった依頼で必ず使用する。
+description: >-
+  Renovate (や Dependabot) が作成した依存更新 PR を対象に、各パッケージの changelog を並列調査し、破壊的変更への追随・新 API の採用判断・関連ファイルの同期更新までを行う。npm/pnpm/yarn・Cargo・Gradle/Maven・GitHub Actions の manifest を自動検出し、プロジェクトの実行基盤（CLAUDE.md / CI 設定）に従ってビルドとテストを走らせる。「この Renovate PR 見て」「依存更新 PR 対応して」「bump 系 PR の中身チェック」といった依頼で必ず使用する。
 argument-hint: "[PR number] [--auto-push]"
 disable-model-invocation: true
 ---

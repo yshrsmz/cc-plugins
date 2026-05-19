@@ -1,6 +1,7 @@
 ---
 name: release-notify
-description: After a release, comment on related GitHub issues to notify users. Extracts addressed issues from the release changelog or PR, then posts appropriate comments on each. Trigger when the user asks to "notify issues about release", "comment on released issues", or "post release comments".
+description: >-
+  After a release, comment on related GitHub issues to notify users. Extracts addressed issues from the release changelog or PR, then posts appropriate comments on each. Trigger when the user asks to "notify issues about release", "comment on released issues", or "post release comments".
 ---
 
 # Release Notify

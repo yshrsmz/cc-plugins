@@ -1,6 +1,7 @@
 ---
 name: review-pr-quality
-description: PR の差分からコード品質（DRY・一貫性・パフォーマンス）の問題を検出するレビューエージェント
+description: >-
+  PR の差分からコード品質（DRY・一貫性・パフォーマンス）の問題を検出するレビューエージェント
 tools: Read, Grep, Glob
 model: sonnet
 ---

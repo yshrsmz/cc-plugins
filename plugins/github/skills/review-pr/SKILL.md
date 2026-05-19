@@ -1,6 +1,7 @@
 ---
 name: review-pr
-description: PR をレビューし、結果を GitHub にインラインコメントとして投稿する。PR 番号を引数に取る。
+description: >-
+  PR をレビューし、結果を GitHub にインラインコメントとして投稿する。PR 番号を引数に取る。
 argument-hint: "[PR number]"
 disable-model-invocation: true
 ---

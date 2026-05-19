@@ -1,6 +1,7 @@
 ---
 name: issue-triage
-description: Triage open GitHub issues by fetching the full list, investigating each in parallel with subagents, and producing a prioritized summary table grouped by feasibility (HIGH/MEDIUM/LOW). Trigger when the user asks to "triage issues", "check open issues", "review issues", or "what issues can we work on".
+description: >-
+  Triage open GitHub issues by fetching the full list, investigating each in parallel with subagents, and producing a prioritized summary table grouped by feasibility (HIGH/MEDIUM/LOW). Trigger when the user asks to "triage issues", "check open issues", "review issues", or "what issues can we work on".
 ---
 
 # Issue Triage

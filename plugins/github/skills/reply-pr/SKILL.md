@@ -1,6 +1,7 @@
 ---
 name: reply-pr
-description: check-pr スキルの評価結果に基づき、各 PR レビューコメントに返信してスレッドを解決する。同じ会話で check-pr 実行後に使用する。
+description: >-
+  check-pr スキルの評価結果に基づき、各 PR レビューコメントに返信してスレッドを解決する。同じ会話で check-pr 実行後に使用する。
 argument-hint: "[PR number]"
 disable-model-invocation: true
 ---
