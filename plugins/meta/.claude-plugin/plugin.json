@@ -1,0 +1,8 @@
+{
+    "name": "meta",
+    "version": "0.1.0",
+    "description": "Meta-workflow skills for Claude Code itself: session retrospective, rule capture, skill authoring helpers",
+    "author": {
+        "name": "yshrsmz"
+    }
+}
