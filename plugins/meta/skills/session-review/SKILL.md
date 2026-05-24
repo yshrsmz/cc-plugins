@@ -10,8 +10,6 @@ Look back over the current conversation, surface the *legitimate* learnings that
 
 The single most important property of this skill is **honest filtering**. A bad retrospective floods rules files with one-off context and ephemeral plans; a good one keeps the corpus thin and high-signal. **Empty is a valid result** — if the session was routine, say so and add nothing.
 
-This skill is the standalone counterpart to the "Rules/Skills/Memory extraction" step in `task.md` Phase 8 (see https://github.com/yshrsmz/notes/blob/main/.claude/commands/task.md). Same intent — capture what should outlive the session — but invocable any time, not only at the end of a structured task workflow.
-
 ## Workflow
 
 ### 1. Scan the session for candidates
