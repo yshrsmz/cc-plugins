@@ -1,7 +1,7 @@
 ---
 name: session-review
 description: >-
-  Reflect on the current Claude Code session, identify legitimate learnings worth preserving (project gotchas, user preferences, mis-attributions, reusable workflows), classify each into the right destination (CLAUDE.md, .claude/rules/, auto-memory, or a new skill), present the proposals via AskUserQuestion, and apply approved changes. Trigger when the user asks to "review this session", "振り返って", "capture learnings", "anything to add to CLAUDE.md?", "何か追加するものは?", "session retrospective", or any other phrasing that asks for post-session reflection on what should be captured.
+  Reflect on the current Claude Code session, identify legitimate learnings worth preserving (project gotchas, user preferences, mis-attributions, reusable workflows), classify each into the right destination (preferring checked-in .claude/rules/, CLAUDE.md, or a new skill over local-only auto-memory), present the proposals via AskUserQuestion, and apply approved changes. Trigger when the user asks to "review this session", "振り返って", "capture learnings", "anything to add to CLAUDE.md?", "何か追加するものは?", "session retrospective", or any other phrasing that asks for post-session reflection on what should be captured.
 ---
 
 # Session Review
@@ -26,14 +26,16 @@ For each candidate, draft a one-sentence summary in your head and ask: *Would fu
 
 ### 2. Classify each surviving candidate
 
-Match each candidate to exactly one destination:
+Match each candidate to exactly one destination.
+
+**Prefer checked-in destinations by default.** `CLAUDE.md` / `.claude/rules/` / a skill all live in the repo, so they sync via git to every machine and every contributor. Auto-memory lives under `~/.claude/projects/<encoded-path>/memory/` — it is **local to this one machine and never checked in**, so a learning saved there is invisible after a fresh `clone`, on a second machine, or to teammates. Reach for auto-memory only when a candidate has *no* home in the repo **and** is personal / non-shared cross-session context (e.g. `user` attributes, the volatile `project` progress state). When a candidate could plausibly go to either a checked-in file or auto-memory, the checked-in file wins.
 
 | Destination | What belongs here |
 |---|---|
-| **`CLAUDE.md`** (project root) | Non-obvious codebase facts: build/runtime quirks, framework version gotchas, file-layout invariants, things `wxt prepare` regenerates, etc. Usually goes under existing sections like "Notes for editing". |
-| **`.claude/rules/<topic>.md`** | Project-specific *process* conventions: how to write tests in this repo, when to ask the user, comment style, git/PR rules. Each rule file is one topic. |
-| **Auto-memory** (`~/.claude/projects/<encoded-path>/memory/`) | Cross-session learnings: `user` (who they are), `feedback` (what to do/avoid, with **Why** + **How to apply**), `project` (current initiatives), `reference` (external systems). Always update `MEMORY.md` index. |
-| **New skill / command** | A reusable, generalizable multi-step workflow that emerged. Rare — most sessions don't yield one. If yes, recommend invoking the `skill-creator` skill rather than hand-authoring a SKILL.md. |
+| **`.claude/rules/<topic>.md`** (checked in — first choice for process) | Project-specific *process* conventions: how to write tests in this repo, when to ask the user, comment style, git/PR rules, how work should be conducted. Each rule file is one topic. |
+| **`CLAUDE.md`** (project root, checked in — first choice for codebase facts) | Non-obvious codebase facts: build/runtime quirks, framework version gotchas, file-layout invariants, things `wxt prepare` regenerates, etc. Usually goes under existing sections like "Notes for editing". |
+| **New skill / command** (checked in — first choice for reusable workflows) | A reusable, generalizable multi-step workflow that emerged. Rare — most sessions don't yield one. If yes, recommend invoking the `skill-creator` skill rather than hand-authoring a SKILL.md. |
+| **Auto-memory** (`~/.claude/projects/<encoded-path>/memory/`) — **local-only, not synced; last resort** | Cross-session context with no repo home that is fine to keep personal: `user` (who they are), `project` (volatile current progress), `reference` (external systems). `feedback` about *how to work in this project* is really a process convention — prefer `.claude/rules/` and only fall back here if it's genuinely personal. Always update `MEMORY.md` index. |
 
 If a candidate doesn't match cleanly to one destination, that's a signal it isn't well-formed enough — go back and either sharpen it or drop it.
 
@@ -41,7 +43,8 @@ If a candidate doesn't match cleanly to one destination, that's a signal it isn'
 
 - "Don't do X" without a *why* → not capturable yet; ask the user the reason before saving.
 - "X exists in file Y" → the code itself is the source of truth; only capture if X is non-obvious from reading Y.
-- "User wants the work split into separate PRs" → either a one-off context detail or a `feedback` memory if the pattern recurs.
+- Feedback about *how to conduct the work* (when to ask, how to fan out subagents, what process to follow) → this is a process convention; default it to `.claude/rules/`, not auto-memory. Auto-memory `feedback` is for the genuinely personal, non-shareable kind only.
+- "User wants the work split into separate PRs" → either a one-off context detail or, if the pattern recurs and is process-shaped, a `.claude/rules/` entry rather than an auto-memory note.
 - Anything already documented elsewhere (existing rule, existing memory, CLAUDE.md, code comment) → skip; don't duplicate.
 
 ### 3. Filter aggressively before presenting
