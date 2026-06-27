@@ -99,59 +99,52 @@ claude plugin install <plugin-name>@yshrsmz-cc-plugins --scope local
 
 ## Available Plugins
 
-### base
-Essential commands and hooks for common workflows.
+各プラグインは Agent Skills（`/<skill-name>` で起動、または文脈に応じて自動起動）と Subagents（特定タスクに特化したエージェント）で構成されています。
 
-**Commands:**
-- `/check-pr` - Automated PR review comment analysis and issue resolution workflow
-  - Fetches review comments using `gh` commands
-  - Analyzes feedback from copilot, claude, and reviewers
-  - Creates individual commits for each fix
-  - Verifies build/test/lint after changes
+### android
+Android development best practices, code generation, and debugging assistance.
 
-**Hooks:**
-- SessionStart - Injects current date/time context automatically
+**Skills:**
+- `/agent-review` - Android プロジェクト（app / library）のコード変更を Claude Code の Task subagent でレビューする。プロジェクト文脈を実行時に検出
+- `/codex-review` - Android プロジェクトのコード変更を Codex MCP サーバーでレビューする
 
-**MCP Servers:**
-- Sequential Thinking - Enhanced reasoning capabilities for complex problems
+**Agents:**
+- `android-compose-architect` - Android アーキテクチャと Jetpack Compose 実装の設計・リファクタリング
+- `android-library-architect` - Android ライブラリの公開 API 設計・Java 相互運用・スレッド安全性のレビュー
 
-### codex-mcp
-Codex MCP integration for comprehensive code reviews.
+### github
+Git/GitHub safety rules and PR review workflows.
 
-**Commands:**
-- `/codex-review` - In-depth code review workflow with Codex
-  - Analyzes staged and unstaged changes via git
-  - Checks architecture compliance (MVI patterns, clean architecture)
-  - Reviews code quality, testing coverage, and Android best practices
-  - Provides actionable feedback with specific file/line references
+**Skills:**
+- `/git-operations` - すべての git 操作（commit, branch, rebase, push, PR 作成など）の安全ガイドライン
+- `/review-pr` - PR をレビューし、結果を GitHub にインラインコメントとして投稿する
+- `/check-pr` - PR のレビューコメントと CI ステータスを確認し、各指摘を個別コミット・push する
+- `/reply-pr` - check-pr の評価結果に基づき、各レビューコメントに返信してスレッドを解決する
+- `/issue-triage` - オープン issue を並列調査し、実現性（HIGH/MEDIUM/LOW）でグループ化した優先度表を作成する
+- `/release-notify` - リリース後、対応した issue にコメントしてユーザーに通知する
+- `/renovate-pr-review` - Renovate / Dependabot の依存更新 PR の changelog を並列調査し、破壊的変更への追随や関連ファイルの同期更新を行う
 
-**MCP Servers:**
-- Codex - Code analysis and review capabilities
+**Agents:**
+- `review-pr-bugs` - PR の差分からバグ・セキュリティ問題を検出する
+- `review-pr-quality` - PR の差分からコード品質（DRY・一貫性・パフォーマンス）の問題を検出する
+- `review-pr-rules` - PR の差分がプロジェクト規約（CLAUDE.md / .claude/rules/）に準拠しているかチェックする
 
-### serena-mcp
-Serena MCP integration for IDE assistance.
+### meta
+Meta-workflow skills for Claude Code itself.
 
-**MCP Servers:**
-- Serena - IDE assistant providing project context and insights
+**Skills:**
+- `/session-review` - 現在のセッションを振り返り、保存価値のある学び（プロジェクト固有の注意点・ユーザーの好み・再利用可能なワークフロー）を抽出し、適切な保存先（`.claude/rules/`, `CLAUDE.md`, 新規 skill など）に分類して提案・適用する
 
 ## Plugin Categories
 
-### 💬 Slash Commands
-Custom commands that can be invoked with `/` in Claude Code to automate workflows.
-
-### 🪝 Hooks
-Event-driven shell commands that execute in response to Claude Code events (SessionStart, PreToolUse, UserPromptSubmit, etc.).
-
-### 🔌 MCP Servers
-Model Context Protocol servers that extend Claude Code with new tools and integrations.
-
-Available MCP integrations:
-- **Sequential Thinking** (base plugin) - Enhanced reasoning for complex problems
-- **Codex** (codex-mcp plugin) - Code analysis and review capabilities
-- **Serena** (serena-mcp plugin) - IDE assistant with project context
-
 ### 🛠️ Skills
-Specialized capabilities that provide domain knowledge and workflows. *(Coming soon)*
+`/` で起動できる、あるいは文脈に応じて自動起動する特化機能。ドメイン知識やワークフローを提供します。各プラグインの中心的な構成要素です。
+
+### 🤖 Subagents
+特定タスクに特化したエージェント定義。レビューやアーキテクチャ設計など、専門的な判断を委譲できます。
+
+### 🪝 Hooks / 🔌 MCP Servers / 💬 Slash Commands
+Claude Code のプラグインは hooks（イベント駆動のシェルコマンド）、MCP サーバー、スラッシュコマンドもサポートしています。現在このマーケットプレースのプラグインは主に Skills と Subagents で構成されています。
 
 ## Contributing
 
@@ -161,10 +154,9 @@ We welcome plugin contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for de
 
 1. Fork this repository
 2. Create your plugin in the `plugins/` directory
-3. Add a `plugin.json` manifest
-4. Include a detailed README
-5. Register your plugin in `.claude-plugin/marketplace.json`
-6. Submit a pull request
+3. Add a `.claude-plugin/plugin.json` manifest
+4. Register your plugin in `.claude-plugin/marketplace.json`
+5. Submit a pull request
 
 ## Plugin Structure
 
@@ -173,10 +165,16 @@ Each plugin should follow this structure:
 ```
 plugins/
 └── your-plugin/
-    ├── plugin.json          # Required: Plugin manifest
-    ├── README.md            # Required: Documentation
-    └── [plugin files]       # Your plugin implementation
+    ├── .claude-plugin/
+    │   └── plugin.json      # Required: Plugin manifest (name, version, description, author)
+    ├── commands/            # Optional: slash commands (.md)
+    ├── skills/              # Optional: Agent Skills (<name>/SKILL.md)
+    ├── agents/              # Optional: subagent definitions (.md)
+    ├── hooks/               # Optional: hooks.json + scripts
+    └── .mcp.json            # Optional: MCP server definitions
 ```
+
+**Important**: `commands/`, `skills/`, `agents/`, `hooks/` go in the plugin root. Only `plugin.json` lives inside `.claude-plugin/`.
 
 ## Documentation
 
