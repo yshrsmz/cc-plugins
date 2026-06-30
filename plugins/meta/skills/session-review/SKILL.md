@@ -32,7 +32,7 @@ Match each candidate to exactly one destination.
 
 | Destination | What belongs here |
 |---|---|
-| **`.claude/rules/<topic>.md`** (checked in — first choice for process) | Project-specific *process* conventions: how to write tests in this repo, when to ask the user, comment style, git/PR rules, how work should be conducted. Each rule file is one topic. |
+| **`.claude/rules/<topic>.md`** (checked in — first choice for process) | Process conventions (project-specific or general): how to write tests in this repo, when to ask the user, comment style, git/PR rules, how work should be conducted. Each rule file is one topic. |
 | **`CLAUDE.md`** (project root, checked in — first choice for codebase facts) | Non-obvious codebase facts: build/runtime quirks, framework version gotchas, file-layout invariants, things `wxt prepare` regenerates, etc. Usually goes under existing sections like "Notes for editing". |
 | **New skill / command** (checked in — first choice for reusable workflows) | A reusable, generalizable multi-step workflow that emerged. Rare — most sessions don't yield one. If yes, recommend invoking the `skill-creator` skill rather than hand-authoring a SKILL.md. |
 | **Auto-memory** (`~/.claude/projects/<encoded-path>/memory/`) — **local-only, not synced; last resort** | Cross-session context with no repo home that is fine to keep personal: `user` (who they are), `project` (volatile current progress), `reference` (external systems). `feedback` about *how to work in this project* is really a process convention — prefer `.claude/rules/` and only fall back here if it's genuinely personal. Always update `MEMORY.md` index. |
