@@ -19,7 +19,16 @@ The Firebase MCP tools (`mcp__*firebase*__crashlytics_*`) must be available. If 
 ToolSearch "select:mcp__plugin_firebase_firebase__crashlytics_get_report,mcp__plugin_firebase_firebase__crashlytics_get_issue,mcp__plugin_firebase_firebase__crashlytics_list_events,mcp__plugin_firebase_firebase__crashlytics_batch_get_events"
 ```
 
-(Adjust the prefix to whatever the connected Firebase MCP server uses.) If no Firebase MCP server is connected at all, stop and tell the user to set one up rather than improvising with REST calls.
+(Adjust the prefix to whatever the connected Firebase MCP server uses.)
+
+If no Firebase MCP server is connected at all, do NOT improvise with REST calls. The android plugin declares a dependency on the `firebase` plugin (from the `firebase` marketplace), but dependency resolution is silently skipped when that marketplace is not registered on the user's machine. Tell the user to run:
+
+```
+claude plugin marketplace add firebase/firebase-tools
+claude plugin install firebase@firebase
+```
+
+then restart the session (or `/reload-plugins`) so the Firebase MCP tools become available.
 
 `crashlytics_get_report`'s own description asks you to read `firebase://guides/crashlytics/reports` first. This skill already covers those prerequisites (exact displayName filters, paired interval timestamps, 90-day limit), so you can skip the guide unless a call fails in a way this skill doesn't explain.
 
