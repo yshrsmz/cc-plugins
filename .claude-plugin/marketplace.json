@@ -5,8 +5,9 @@
   },
   "metadata": {
     "description": "Claude Code plugin marketplace for yshrsmz's repositories",
-    "version": "0.5.0"
+    "version": "0.6.0"
   },
+  "allowCrossMarketplaceDependenciesOn": ["firebase"],
   "plugins": [
     {
       "name": "android",

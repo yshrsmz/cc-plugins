@@ -107,6 +107,7 @@ Android development best practices, code generation, and debugging assistance.
 **Skills:**
 - `/agent-review` - Android プロジェクト（app / library）のコード変更を Claude Code の Task subagent でレビューする。プロジェクト文脈を実行時に検出
 - `/codex-review` - Android プロジェクトのコード変更を Codex MCP サーバーでレビューする
+- `/crashlytics-triage` - Firebase MCP 経由で Crashlytics のクラッシュレポートを調査する。リリース後のヘルスチェックと個別イシューの深掘りに対応
 
 **Agents:**
 - `android-compose-architect` - Android アーキテクチャと Jetpack Compose 実装の設計・リファクタリング
