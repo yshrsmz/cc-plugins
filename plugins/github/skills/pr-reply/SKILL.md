@@ -1,22 +1,22 @@
 ---
-name: reply-pr
+name: pr-reply
 description: >-
-  check-pr スキルの評価結果に基づき、各 PR レビューコメントに返信してスレッドを解決する。同じ会話で check-pr 実行後に使用する。
+  pr-check スキルの評価結果に基づき、各 PR レビューコメントに返信してスレッドを解決する。同じ会話で pr-check 実行後に使用する。
 argument-hint: "[PR number]"
 disable-model-invocation: true
 ---
 
-# Reply PR
+# PR Reply
 
-Reply to review comments with fix details and resolve threads. Run this in the same conversation AFTER `check-pr` has been executed and fixes have been committed and pushed.
+Reply to review comments with fix details and resolve threads. Run this in the same conversation AFTER `pr-check` has been executed and fixes have been committed and pushed.
 
 ## 1. Identify the PR
 
 If you don't understand which PR you should look into, ask user first.
 
-## 2. Collect check-pr evaluation results from conversation context
+## 2. Collect pr-check evaluation results from conversation context
 
-Review the conversation history to find the `check-pr` evaluation results. Extract the following for each evaluated comment:
+Review the conversation history to find the `pr-check` evaluation results. Extract the following for each evaluated comment:
 
 - **Decision**: FIX NOW / SKIP / DEFER
 - **File path and line number**
@@ -26,8 +26,8 @@ Review the conversation history to find the `check-pr` evaluation results. Extra
 - **Commit hash** that addressed the fix (for FIX NOW items)
 - **Skip/Defer reason** (for SKIP/DEFER items)
 
-**CRITICAL**: If `check-pr` results are NOT found in the current conversation, STOP and ask the user to either:
-1. Run `check-pr` first, or
+**CRITICAL**: If `pr-check` results are NOT found in the current conversation, STOP and ask the user to either:
+1. Run `pr-check` first, or
 2. Provide the evaluation details manually
 
 ## 3. Fetch review threads with IDs - MANDATORY EXECUTION
@@ -77,7 +77,7 @@ gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments --paginate --jq '
 
 ## 4. Map evaluation results to threads
 
-For each comment evaluated in `check-pr`, match it to its corresponding review thread using file path, line number, author, and comment body.
+For each comment evaluated in `pr-check`, match it to its corresponding review thread using file path, line number, author, and comment body.
 
 ### Present the mapping as a table:
 
@@ -96,7 +96,7 @@ For each comment evaluated in `check-pr`, match it to its corresponding review t
 - [ ] All FIX NOW comments are mapped to a commit hash
 - [ ] All threads have valid thread IDs for resolve operations
 - [ ] Already-resolved threads are identified (will be skipped)
-- [ ] Comment count matches the check-pr evaluation count
+- [ ] Comment count matches the pr-check evaluation count
 
 **Wait for user confirmation before proceeding.**
 

@@ -119,17 +119,17 @@ Git/GitHub safety rules and PR review workflows.
 
 **Skills:**
 - `/git-operations` - すべての git 操作（commit, branch, rebase, push, PR 作成など）の安全ガイドライン
-- `/review-pr` - PR をレビューし、結果を GitHub にインラインコメントとして投稿する
-- `/check-pr` - PR のレビューコメントと CI ステータスを確認し、各指摘を個別コミット・push する
-- `/reply-pr` - check-pr の評価結果に基づき、各レビューコメントに返信してスレッドを解決する
+- `/pr-review` - PR をレビューし、結果を GitHub にインラインコメントとして投稿する
+- `/pr-check` - PR のレビューコメントと CI ステータスを確認し、各指摘を個別コミット・push する
+- `/pr-reply` - pr-check の評価結果に基づき、各レビューコメントに返信してスレッドを解決する
 - `/issue-triage` - オープン issue を並列調査し、実現性（HIGH/MEDIUM/LOW）でグループ化した優先度表を作成する
 - `/release-notify` - リリース後、対応した issue にコメントしてユーザーに通知する
 - `/renovate-pr-review` - Renovate / Dependabot の依存更新 PR の changelog を並列調査し、破壊的変更への追随や関連ファイルの同期更新を行う
 
 **Agents:**
-- `review-pr-bugs` - PR の差分からバグ・セキュリティ問題を検出する
-- `review-pr-quality` - PR の差分からコード品質（DRY・一貫性・パフォーマンス）の問題を検出する
-- `review-pr-rules` - PR の差分がプロジェクト規約（CLAUDE.md / .claude/rules/）に準拠しているかチェックする
+- `pr-review-bugs` - PR の差分からバグ・セキュリティ問題を検出する
+- `pr-review-quality` - PR の差分からコード品質（DRY・一貫性・パフォーマンス）の問題を検出する
+- `pr-review-rules` - PR の差分がプロジェクト規約（CLAUDE.md / .claude/rules/）に準拠しているかチェックする
 
 ### meta
 Meta-workflow skills for Claude Code itself.
