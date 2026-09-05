@@ -1,5 +1,5 @@
 ---
-name: review-pr-bugs
+name: pr-review-bugs
 description: >-
   PR の差分からバグ・セキュリティ問題を検出するレビューエージェント
 tools: Read, Grep, Glob

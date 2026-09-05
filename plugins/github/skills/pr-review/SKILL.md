@@ -1,5 +1,5 @@
 ---
-name: review-pr
+name: pr-review
 description: >-
   PR をレビューし、結果を GitHub にインラインコメントとして投稿する。PR 番号を引数に取る。
 argument-hint: "[PR number]"
@@ -25,15 +25,15 @@ PR をレビューし、GitHub にインラインコメント付きレビュー�
 
 以下の 3 つのサブエージェントを **Task ツールで並列に** spawn する。各エージェントには PR のタイトル・説明・差分をプロンプトとして渡す。
 
-### review-pr-bugs（subagent_type: review-pr-bugs）
+### pr-review-bugs（subagent_type: pr-review-bugs）
 
 バグ・セキュリティ問題の検出。Opus モデルで深い推論を行う。
 
-### review-pr-rules（subagent_type: review-pr-rules）
+### pr-review-rules（subagent_type: pr-review-rules）
 
 CLAUDE.md / `.claude/rules/` への準拠チェック。Sonnet モデルで規約パターンマッチングを行う。
 
-### review-pr-quality（subagent_type: review-pr-quality）
+### pr-review-quality（subagent_type: pr-review-quality）
 
 コード品質（DRY・一貫性・パフォーマンス）のレビュー。Sonnet モデル。
 

@@ -1,5 +1,5 @@
 ---
-name: review-pr-quality
+name: pr-review-quality
 description: >-
   PR の差分からコード品質（DRY・一貫性・パフォーマンス）の問題を検出するレビューエージェント
 tools: Read, Grep, Glob
@@ -23,8 +23,8 @@ model: sonnet
 
 ## スコープ外（フラグしない）
 
-- バグ・セキュリティ問題（review-pr-bugs の担当）
-- CLAUDE.md / `.claude/rules/` に明文化された規約違反（review-pr-rules の担当）
+- バグ・セキュリティ問題（pr-review-bugs の担当）
+- CLAUDE.md / `.claude/rules/` に明文化された規約違反（pr-review-rules の担当）
 - コードスタイル・フォーマット（リンターの担当）
 - 主観的な設計の好み
 

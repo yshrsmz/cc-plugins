@@ -1,12 +1,12 @@
 ---
-name: check-pr
+name: pr-check
 description: >-
   PR のレビューコメントと CI ステータスを確認し、各指摘を独立に評価して修正すべきものは個別コミット・push する。PR 番号を引数に取る。
 argument-hint: "[PR number]"
 disable-model-invocation: true
 ---
 
-# Check PR
+# PR Check
 
 PR のレビューコメントと CI ステータスを確認し、問題を解決する。
 
