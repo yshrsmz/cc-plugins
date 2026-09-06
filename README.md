@@ -125,6 +125,7 @@ Git/GitHub safety rules and PR review workflows.
 - `/issue-triage` - オープン issue を並列調査し、実現性（HIGH/MEDIUM/LOW）でグループ化した優先度表を作成する
 - `/release-notify` - リリース後、対応した issue にコメントしてユーザーに通知する
 - `/renovate-pr-review` - Renovate / Dependabot の依存更新 PR の changelog を並列調査し、破壊的変更への追随や関連ファイルの同期更新を行う
+- `/branch-cleanup` - マージ済み PR の head SHA と照合して、ローカルのマージ済みブランチを安全に削除する
 
 **Agents:**
 - `pr-review-bugs` - PR の差分からバグ・セキュリティ問題を検出する
