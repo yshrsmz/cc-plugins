@@ -10,6 +10,7 @@ description: >-
 
 - NEVER update the git config
 - NEVER run destructive git commands (`push --force`, `reset --hard`, `checkout .`, `restore .`, `clean -f`, `branch -D`) unless the user explicitly requests these actions
+  - Exception: the `branch-cleanup` skill's `git branch -D`, which only targets branches whose tip SHA matches a merged PR's head SHA and only runs when the user asked for cleanup. Squash merge makes `git branch -d` unable to recognize those branches, so `-D` is the only way to delete them
 - NEVER skip hooks (`--no-verify`, `--no-gpg-sign`, etc.) unless the user explicitly requests it
 - NEVER force push to `main`/`master`. Warn the user if they request it
 - NEVER run `git rebase -i` or `git add -i` since they require interactive input which is not supported
