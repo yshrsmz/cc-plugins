@@ -134,9 +134,24 @@ worktree_path_for() {
 
 # worktree を消したときに一緒に消える gitignore 済みエントリ。`--directory` が
 # 丸ごと ignore されたディレクトリを 1 行に畳むので `node_modules/ .env` のように短くなる。
+#
+# 長い一覧は畳むが、件数は必ず出す。「これで全部」と読めるところで黙って打ち切ると、
+# 報告の目的（何が復旧できなくなるかを見せる）が崩れる。
 ignored_entries_in() {
-  ( cd "$1" 2>/dev/null && git ls-files --others --ignored --exclude-standard --directory ) \
-    | head -8 | tr '\n' ' ' | sed 's/ $//'
+  local all shown count limit=8
+  all="$( cd "$1" 2>/dev/null && git ls-files --others --ignored --exclude-standard --directory )"
+  if [ -z "$all" ]; then
+    return 0
+  fi
+
+  count="$(printf '%s\n' "$all" | wc -l | tr -d ' ')"
+  shown="$(printf '%s\n' "$all" | head -"$limit" | tr '\n' ' ' | sed 's/ $//')"
+
+  if [ "$count" -gt "$limit" ]; then
+    printf '%s ほか %d 件' "$shown" "$((count - limit))"
+  else
+    printf '%s' "$shown"
+  fi
 }
 
 # `git worktree remove` が拒否する状態か。判定条件は remove と同じ「tracked の変更または
