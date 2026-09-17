@@ -1,7 +1,7 @@
 ---
 name: codex-review
 description: >-
-  Review code changes in an Android project (app or library) using the Codex MCP server. Discovers project context at runtime.
+  Review code changes in an Android project (app or library) using the Codex CLI (`codex exec`). Discovers project context at runtime.
 disable-model-invocation: true
 ---
 
@@ -29,7 +29,7 @@ Read the guidelines from [review-base.md](review-base.md) and follow Step 4 (Gen
 ```
 You are an expert code reviewer analyzing code changes for [PROJECT_NAME] ([PROJECT_TYPE]).
 
-You are running in Codex MCP with workspace-write sandbox mode, which gives you access to:
+You are running in Codex CLI (`codex exec`) with workspace-write sandbox mode, which gives you access to:
 - Bash commands (git, file operations, etc.)
 - File reading capabilities
 - Full repository access
@@ -53,17 +53,40 @@ thorough analysis and extensive git operations.
 
 ### 5. Execute Codex Review
 
-Call the `mcp__codex__codex` tool with the fully customized prompt:
+Run the Codex CLI with the fully customized prompt. Write the prompt to a temporary
+file and feed it through stdin — do NOT inline it as a shell argument, since the
+prompt contains quotes, backticks and newlines that the shell would reinterpret.
 
+```bash
+PROMPT_FILE=$(mktemp -t codex-review-prompt)
+OUTPUT_FILE=$(mktemp -t codex-review-output)
+
+# Write the fully customized prompt from step 4 into "$PROMPT_FILE" first.
+
+codex exec \
+  -C "<absolute-path-to-project-root>" \
+  -s workspace-write \
+  -o "$OUTPUT_FILE" \
+  - < "$PROMPT_FILE"
 ```
-Tool: mcp__codex__codex
-Parameters:
-{
-  "cwd": "<absolute-path-to-project-root>",
-  "sandbox": "workspace-write",
-  "prompt": "<fully customized prompt from step 4>"
-}
-```
+
+Flag mapping from the parameters this skill used before:
+
+| Purpose | Flag |
+| --- | --- |
+| Working root | `-C <dir>` |
+| Sandbox policy | `-s workspace-write` |
+| Prompt | `-` (read from stdin) |
+| Final message only | `-o <file>` |
+
+Read `"$OUTPUT_FILE"` to obtain the review result — it holds the agent's final
+message without the interleaved progress log that goes to stdout. If `codex exec`
+exits non-zero, report the failure instead of presenting partial findings.
+
+**Requires Codex CLI 0.154.0 or later.** This skill previously called an
+`mcp__codex__codex` MCP tool, which no longer exists: the `codex mcp-server` entry
+point was removed in Codex 0.154.0, and `codex mcp` is now a manager for *external*
+MCP servers rather than a way to expose Codex itself as one.
 
 ### 6. Present Findings
 
@@ -75,13 +98,13 @@ Simply type `/codex-review` in Claude Code to trigger this review workflow.
 
 ## Comparison with /agent-review
 
-- **`/codex-review`**: Uses Codex MCP server (separate execution environment)
+- **`/codex-review`**: Shells out to the Codex CLI (`codex exec`, separate execution environment)
     - Separate execution context
     - May have different resource allocation
-    - Requires Codex MCP server to be available
+    - Requires the `codex` CLI (0.154.0+) to be installed and authenticated
 
 - **`/agent-review`**: Uses Claude Code's Task agent (subagent within current session)
-    - No external MCP dependencies
+    - No external CLI dependencies
     - Integrated with current Claude Code session
 
 Both use the same review criteria from [review-base.md](review-base.md).
