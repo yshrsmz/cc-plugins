@@ -184,15 +184,15 @@ Present the results directly to the user with clear sections as specified in the
 ## Comparison with /codex-review
 
 - **`/agent-review`**: Uses Claude Code's Task agent (subagent execution within current session)
-    - No external MCP dependencies
+    - No external CLI dependencies
     - Integrated with current Claude Code session
     - Good for regular reviews
     - Limited by Claude Code's standard rate limits
 
-- **`/codex-review`**: Uses Codex MCP server (separate execution environment)
+- **`/codex-review`**: Shells out to the Codex CLI (`codex exec`, separate execution environment)
     - Separate execution context
     - May have different resource allocation
-    - Requires Codex MCP server to be available
-    - Subject to Codex MCP rate limits
+    - Requires the `codex` CLI (0.154.0+) to be installed and authenticated
+    - Subject to Codex rate limits
 
 Choose based on availability and preference. Both use the same review criteria from [review-base.md](review-base.md).

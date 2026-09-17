@@ -106,7 +106,8 @@ Android development best practices, code generation, and debugging assistance.
 
 **Skills:**
 - `/agent-review` - Android プロジェクト（app / library）のコード変更を Claude Code の Task subagent でレビューする。プロジェクト文脈を実行時に検出
-- `/codex-review` - Android プロジェクトのコード変更を Codex MCP サーバーでレビューする
+- `/codex-review` - Android プロジェクトのコード変更を Codex CLI（`codex exec`）でレビューする
+  - 前提: `codex` CLI 0.154.0 以降がインストール済みかつ認証済みであること
 - `/crashlytics-triage` - Firebase MCP 経由で Crashlytics のクラッシュレポートを調査する。リリース後のヘルスチェックと個別イシューの深掘りに対応
   - 前提: firebase プラグインが必要（`firebase` マーケットプレースへの依存として自動インストールされる）。マーケットプレース未登録の場合は先に `claude plugin marketplace add firebase/firebase-tools` を実行すること
 
