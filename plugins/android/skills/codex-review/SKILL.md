@@ -60,6 +60,7 @@ prompt contains quotes, backticks and newlines that the shell would reinterpret.
 ```bash
 PROMPT_FILE=$(mktemp -t codex-review-prompt)
 OUTPUT_FILE=$(mktemp -t codex-review-output)
+RUN_LOG=$(mktemp -t codex-review-run)
 
 # Write the fully customized prompt from step 4 into "$PROMPT_FILE" first.
 
@@ -67,8 +68,12 @@ codex exec \
   -C "<absolute-path-to-project-root>" \
   -s workspace-write \
   -o "$OUTPUT_FILE" \
-  - < "$PROMPT_FILE"
+  - < "$PROMPT_FILE" > "$RUN_LOG" 2>&1
 ```
+
+**Allow several minutes.** Codex runs git commands and reads files before answering, so a
+real review takes longer than the default Bash timeout. Raise the timeout on this call
+rather than letting it be killed mid-review.
 
 Flag mapping from the parameters this skill used before:
 
@@ -80,8 +85,10 @@ Flag mapping from the parameters this skill used before:
 | Final message only | `-o <file>` |
 
 Read `"$OUTPUT_FILE"` to obtain the review result — it holds the agent's final
-message without the interleaved progress log that goes to stdout. If `codex exec`
-exits non-zero, report the failure instead of presenting partial findings.
+message only. The progress log (session id, per-step reasoning, token usage) goes to
+stdout, which is why the command above redirects it to `"$RUN_LOG"`; read that file only
+when diagnosing a failure. If `codex exec` exits non-zero, report the failure instead of
+presenting partial findings.
 
 **Requires Codex CLI 0.154.0 or later.** This skill previously called an
 `mcp__codex__codex` MCP tool, which no longer exists: the `codex mcp-server` entry
