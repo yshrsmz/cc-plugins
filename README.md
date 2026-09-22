@@ -139,6 +139,13 @@ Meta-workflow skills for Claude Code itself.
 **Skills:**
 - `/session-review` - 現在のセッションを振り返り、保存価値のある学び（プロジェクト固有の注意点・ユーザーの好み・再利用可能なワークフロー）を抽出し、適切な保存先（`.claude/rules/`, `CLAUDE.md`, 新規 skill など）に分類して提案・適用する
 
+### writing
+Japanese prose editing skills: AI-generated-text detection and redundancy cleanup.
+
+**Skills:**
+- `/deai` - 日本語ドキュメントから AI 生成感を 21 カテゴリで検出し、修正案を提示して校正する。会話の文脈を持たないサブエージェントとして動くため、執筆者には自然に見える「経緯に依存した記述」も拾える
+- `/dedupe-cleanup` - ドキュメントの冗長表現・重複箇所を検出して文章校正を行う
+
 ## Plugin Categories
 
 ### 🛠️ Skills
