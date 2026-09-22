@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Claude Code plugin marketplace for yshrsmz's repositories",
-    "version": "0.7.0"
+    "version": "0.8.0"
   },
   "allowCrossMarketplaceDependenciesOn": ["firebase"],
   "plugins": [
@@ -23,6 +23,11 @@
       "name": "meta",
       "source": "./plugins/meta",
       "description": "Meta-workflow skills for Claude Code itself: session retrospective, rule capture, skill authoring helpers"
+    },
+    {
+      "name": "writing",
+      "source": "./plugins/writing",
+      "description": "Japanese prose editing skills: AI-generated-text detection and redundancy cleanup"
     }
   ]
 }
