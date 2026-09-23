@@ -27,7 +27,7 @@
     {
       "name": "writing",
       "source": "./plugins/writing",
-      "description": "Japanese prose editing skills: AI-generated-text detection and redundancy cleanup"
+      "description": "Japanese prose editing: AI-generated-text detection plus redundancy, duplication, and consistency cleanup in a single pass"
     }
   ]
 }

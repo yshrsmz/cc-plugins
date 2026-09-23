@@ -1,7 +1,7 @@
 {
     "name": "writing",
-    "version": "0.1.1",
-    "description": "Japanese prose editing skills: AI-generated-text detection and redundancy cleanup",
+    "version": "1.0.0",
+    "description": "Japanese prose editing: AI-generated-text detection plus redundancy, duplication, and consistency cleanup in a single pass",
     "author": {
         "name": "yshrsmz"
     }
