@@ -1,24 +1,25 @@
 # writing
 
-Prose editing skills for Japanese technical documents — detecting the tells of AI-generated writing, and cleaning up redundancy. **Both skills read and rewrite Japanese text, and their output is in Japanese.**
+A prose editing skill for Japanese technical documents — detecting the tells of AI-generated writing, together with redundancy, duplication, inconsistent notation, and internal contradictions. **The skill reads and rewrites Japanese text, and its output is in Japanese.**
 
 ## Skills
 
 ### `deai`
 
-Detects "AI-ness" (AI 生成感) in a Japanese document across 21 categories — overblown significance, AI-favoured vocabulary, uniform sentence rhythm, over-structured headings, and writing that only makes sense to someone who followed the conversation that produced it — then proposes concrete rewrites and applies the ones you approve.
+Checks a Japanese document across 26 categories and returns a single list of findings with concrete rewrites, then applies the ones you approve.
 
-Trigger phrases include 「AI感を消して」, 「AIっぽさを除去して」, 「人間が書いたように直して」, and 「経緯を知らない読者向けに書き直して」.
+- Categories 1–21 cover the tells of AI-generated writing — overblown significance, AI-favoured vocabulary, uniform sentence rhythm, over-structured headings, and writing that only makes sense to someone who followed the conversation that produced it
+- Categories 22–26 cover general document quality — duplicated content, inconsistent notation (表記揺れ), sentence construction, statements that contradict each other, and ordinary wordiness
 
-The skill runs as a forked subagent (`context: fork`) so that it reads the document **without** the conversation that produced it. That isolation is what makes category 21 (writing that depends on conversational context) detectable at all — an author who still holds the context reads those passages as self-evident.
+Detection is split between two subagents that run in parallel — one for categories 1–21, one for 22–26 — so that neither set of checks crowds out the other. The skill then merges their findings: when one passage falls under several categories, it is reported once with all the categories listed, and gets one rewrite that satisfies all of them. Takes an optional file path as its argument.
 
-### `dedupe-cleanup`
+Trigger phrases include 「AI感を消して」, 「AIっぽさを除去して」, 「人間が書いたように直して」, 「経緯を知らない読者向けに書き直して」, 「ドキュメントの重複を直して」, 「冗長な表現を削除して」, and 「文書の校正をして」.
 
-Finds redundant and duplicated passages in a document and proposes rewrites. Takes an optional file path as its argument.
+The skill runs as a forked subagent (`context: fork`) so that it reads the document **without** the conversation that produced it. The detector subagents receive only the file path and their category definitions, so they are isolated in the same way. That isolation is what makes category 21 (writing that depends on conversational context) detectable at all — an author who still holds the context reads those passages as self-evident. Because of the fork, pass the file path explicitly; the skill does not infer it from the conversation.
 
-Trigger phrases include 「ドキュメントの重複を直して」, 「冗長な表現を削除して」, and 「文書の校正をして」.
+### Removed in 1.0.0: `dedupe-cleanup`
 
-`deai` deliberately leaves the generic redundancy patterns (「〜することができる」「〜を行う」「〜という」) to this skill rather than flagging them itself, because they are ordinary wordiness rather than a tell of AI authorship. Broader categories still overlap — both skills flag synonym repetition and empty modifiers — so running them on the same document will surface some findings twice.
+`dedupe-cleanup` was merged into `deai`. Running both on the same document produced the same finding twice — often with conflicting rewrites — because `deai` reached the same passages through its own categories. Use `writing:deai` for redundancy and duplication checks as well.
 
 ## Installation
 
