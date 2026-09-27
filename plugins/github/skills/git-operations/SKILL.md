@@ -15,11 +15,12 @@ description: >-
 - NEVER force push to `main`/`master`. Warn the user if they request it
 - NEVER run `git rebase -i` or `git add -i` since they require interactive input which is not supported
 - NEVER use `--no-edit` with `git rebase` commands, as it is not a valid option for git rebase
-- NEVER chain git commands with `&&` or `;`. Always run each git command as a separate invocation
-  - Chaining makes it impossible for the user to allow/deny individual operations (e.g., a chain containing `git push` forces the user to deny the entire chain)
-  - Separate commands make each operation's intent clear and individually controllable
-- NEVER use the `-C` option with git commands (e.g., `git -C /some/path ...`). Always `cd` to the target directory first, or use absolute paths in arguments
-  - When the user is prompted to allow a `git -C` command and selects "Yes, and don't ask again for similar commands", it adds `Bash(git -C:*)` to `permissions.allow`, which matches ALL git commands — effectively bypassing permission checks for every git operation
+- When the session asks the user to approve commands one by one, run each git command as a separate invocation instead of chaining with `&&` or `;`
+  - A chain can only be allowed or denied as a whole (e.g., a chain containing `git push` forces the user to deny the entire chain)
+  - In auto mode, where commands are not approved one by one, chaining is fine
+- When the session asks the user to approve commands one by one, don't use `git -C <path>`; `cd` to the target directory first, or use absolute paths in arguments
+  - If the user approves a `git -C` command with "Yes, and don't ask again for similar commands", `Bash(git -C:*)` is added to `permissions.allow`, and that pattern matches every git command
+  - In auto mode no allow rule is added, so `git -C <absolute path>` is fine. It is the more reliable way to target another repository from a subagent, whose working directory can reset between Bash calls
 
 ## Commit Rules
 
