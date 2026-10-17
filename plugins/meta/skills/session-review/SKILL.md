@@ -33,7 +33,7 @@ Match each candidate to exactly one destination.
 | Destination | What belongs here |
 |---|---|
 | **`.claude/rules/<topic>.md`** (checked in — first choice for process) | Process conventions (project-specific or general): how to write tests in this repo, when to ask the user, comment style, git/PR rules, how work should be conducted. Each rule file is one topic. |
-| **`CLAUDE.md`** (project root, checked in — first choice for codebase facts) | Non-obvious codebase facts: build/runtime quirks, framework version gotchas, file-layout invariants, things `wxt prepare` regenerates, etc. Usually goes under existing sections like "Notes for editing". |
+| **`CLAUDE.md`** (project root, checked in — first choice for codebase facts) | Non-obvious codebase facts: build/runtime quirks, framework version gotchas, file-layout invariants, generated files and what regenerates them, etc. Usually goes under existing sections like "Notes for editing". |
 | **New skill / command** (checked in — first choice for reusable workflows) | A reusable, generalizable multi-step workflow that emerged. Rare — most sessions don't yield one. If yes, recommend invoking the `skill-creator` skill rather than hand-authoring a SKILL.md. |
 | **Auto-memory** (`~/.claude/projects/<encoded-path>/memory/`) — **local-only, not synced; last resort** | Cross-session context with no repo home that is fine to keep personal: `user` (who they are), `project` (volatile current progress), `reference` (external systems). `feedback` about *how to work in this project* is really a process convention — prefer `.claude/rules/` and only fall back here if it's genuinely personal. Always update `MEMORY.md` index. |
 
@@ -64,7 +64,7 @@ Two equally valid shapes:
 
 **Shape A — granular (preferred when candidates are heterogeneous):** one `multiSelect: true` question where each option is one candidate ("`<destination>`: `<one-line summary>`"). User picks the subset to apply.
 
-**Shape B — all-or-nothing (matches `task.md` Phase 8):** one single-select question with options `すべて作成` / `選択して作成` / `作成しない`. If the user picks `選択して作成`, follow up with Shape A.
+**Shape B — all-or-nothing:** one single-select question with options `すべて作成` / `選択して作成` / `作成しない`. If the user picks `選択して作成`, follow up with Shape A.
 
 Either way, phrase each candidate so the user can decide without re-reading the session. Bad: "Save the feedback about the thing." Good: "Save to `.claude/rules/styling.md`: 'Tailwind v4 requires explicit `cursor-pointer` rule for buttons.'"
 
@@ -74,7 +74,7 @@ With ≥4 candidates, group them by destination across multiple questions in one
 
 For each approved candidate:
 
-- **`CLAUDE.md` / `.claude/rules/*`**: use `Edit` to append to the right section, or `Write` for a new rule file. Follow the existing prose-wrap and bullet conventions in the surrounding file — when in doubt, mirror what's already there.
+- **`CLAUDE.md` / `.claude/rules/*`**: use `Edit` to append to the right section, or `Write` for a new rule file. Follow the surrounding file's bullet and heading conventions and the repository's line-wrapping rule; if it has none, don't hard-wrap paragraphs.
 - **Auto-memory**: write a new file in the project's memory directory using the frontmatter format from the system prompt (`name`, `description`, `metadata.type`). **Always append a one-line entry to `MEMORY.md`** — orphaned memory files are invisible.
 - **New skill / command**: invoke `skill-creator` (or the `skill-creator:skill-creator` Skill). Don't try to hand-author a full SKILL.md from scratch — the creator knows the conventions, eval loop, and description-optimization steps.
 
