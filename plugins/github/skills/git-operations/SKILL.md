@@ -6,6 +6,8 @@ description: >-
 
 # Git Operations Safety Guidelines
 
+These are defaults. The project's instructions (CLAUDE.md, rule files, memory) and the session's instructions take precedence where they differ, such as the commit message language, attribution lines, or whether to commit and push without asking.
+
 ## Git Safety Protocol
 
 - NEVER update the git config
@@ -35,18 +37,19 @@ description: >-
 - Follow [Conventional Commits](https://www.conventionalcommits.org/) format: `<type>(<scope>): <description>`
   - Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`
   - Scope is optional but recommended (e.g., `feat(auth): add login endpoint`)
-  - Description should be concise, imperative mood, lowercase, no period at the end
+  - Description should be concise and have no period at the end; in English, use the imperative mood and lowercase
 - For breaking changes, add `!` after type/scope (e.g., `feat(api)!: change response format`) or add `BREAKING CHANGE:` in the body
-- Always pass commit messages via a HEREDOC for proper formatting:
+- Pass multi-line commit messages through a quoted HEREDOC on stdin, so backticks in the message are not run as command substitution:
 
 ```bash
-git commit -m "$(cat <<'EOF'
+git commit -F - <<'EOF'
 feat(auth): add OAuth2 login support
 
-Co-Authored-By: Claude <noreply@anthropic.com>
+<body>
 EOF
-)"
 ```
+
+- Add attribution lines (`Co-Authored-By:` and the like) only as the harness and the repository instruct
 
 ## Branch Rules
 
@@ -66,17 +69,17 @@ EOF
 - Use the PR description/body for details, not the title
 - Include a summary section with bullet points
 - Include a test plan section
-- Use `gh pr create` with a HEREDOC for the body:
+- Write the body to a file and pass it with `--body-file`. With `--body "$(...)"`, a failing command substitution leaves the body empty, and `gh` still succeeds:
 
 ```bash
-gh pr create --title "the pr title" --body "$(cat <<'EOF'
+cat > <scratchpad>/pr-body.md <<'EOF'
 ## Summary
 <1-3 bullet points>
 
 ## Test plan
 [Bulleted checklist of testing steps]
 EOF
-)"
+gh pr create --title "the pr title" --body-file <scratchpad>/pr-body.md
 ```
 
 ## Merge Conflict Resolution

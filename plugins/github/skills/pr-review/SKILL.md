@@ -23,19 +23,19 @@ PR をレビューし、GitHub にインラインコメント付きレビュー�
 
 ## 3. サブエージェントによる並列レビュー
 
-以下の 3 つのサブエージェントを **Task ツールで並列に** spawn する。各エージェントには PR のタイトル・説明・差分をプロンプトとして渡す。
+以下の 3 つのサブエージェントを **Agent ツールで並列に** spawn する。各エージェントには PR のタイトル・説明・差分をプロンプトとして渡す。
 
-### pr-review-bugs（subagent_type: pr-review-bugs）
+### pr-review-bugs（subagent_type: github:pr-review-bugs）
 
-バグ・セキュリティ問題の検出。Opus モデルで深い推論を行う。
+バグ・セキュリティ問題の検出。
 
-### pr-review-rules（subagent_type: pr-review-rules）
+### pr-review-rules（subagent_type: github:pr-review-rules）
 
-CLAUDE.md / `.claude/rules/` への準拠チェック。Sonnet モデルで規約パターンマッチングを行う。
+CLAUDE.md / `.claude/rules/` への準拠チェック。
 
-### pr-review-quality（subagent_type: pr-review-quality）
+### pr-review-quality（subagent_type: github:pr-review-quality）
 
-コード品質（DRY・一貫性・パフォーマンス）のレビュー。Sonnet モデル。
+コード品質（DRY・一貫性・パフォーマンス）のレビュー。
 
 **プロンプトに含める情報:**
 
@@ -93,12 +93,12 @@ PR #<number>: <title>
 
 **重要: `gh api` の `--field` は `comments` 配列を正しく扱えない（文字列として送信され 422 エラーになる）。必ず JSON ファイル + `--input` 方式を使うこと。**
 
-1. Bash の `cat > /tmp/pr-review.json << 'EOF'` で JSON ファイルを作成する
-2. `gh api ... --input /tmp/pr-review.json` で投稿する
+1. Bash の `cat > <scratchpad>/pr-review.json << 'EOF'` で JSON ファイルを作成する。置き場所はセッションの scratchpad にする（無ければ `mktemp -d` で作ったディレクトリ）。`/tmp` 直下の固定名は、並行するセッションどうしで上書きし合う
+2. `gh api ... --input <scratchpad>/pr-review.json` で投稿する
 
 ```bash
 # 1. JSON ファイルを作成
-cat > /tmp/pr-review.json << 'EOF'
+cat > <scratchpad>/pr-review.json << 'EOF'
 {
   "commit_id": "<head_commit_sha>",
   "body": "<総合コメント>",
@@ -117,7 +117,7 @@ EOF
 # 2. 投稿
 gh api repos/{owner}/{repo}/pulls/{number}/reviews \
   --method POST \
-  --input /tmp/pr-review.json \
+  --input <scratchpad>/pr-review.json \
   --jq '.html_url'
 ```
 

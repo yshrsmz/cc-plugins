@@ -72,7 +72,7 @@ Fetch the release notes / changelog for <package> between versions <old> and <ne
 Our project uses <package> for <use-case>. Our actual usage in code:
   <パッケージをどう import/呼び出しているかの要約>
 
-Report under 400 words. Focus on:
+Report only what applies to our usage; skip unrelated changes. Keep each item to one or two sentences. Focus on:
 1. New APIs / features that could simplify our code or improve maintainability/performance
 2. Breaking changes or deprecations relevant to our usage
 3. Bug fixes affecting our scenarios
