@@ -25,7 +25,7 @@ model: sonnet
 - CLAUDE.md や `.claude/rules/` に **明文化されたルール** への違反
   - 例: `data-access.md` — View 層からの直接 DB アクセス
   - 例: `timezone.md` — アンチパターンに該当するコード
-  - 例: `supabase-auth.md` — `user.id` の使用（`user.sub` であるべき）
+  - 例: 認証の規約 — ルールが指定する識別子とは別のフィールドを使っている
   - 例: `package-manager.md` — `npx` の使用
   - 例: `server-api.md` — メンバーシップチェックの欠落
   - 例: `component-architecture.md` — Container/Presentational パターン違反

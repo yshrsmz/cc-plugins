@@ -14,11 +14,9 @@ PR のレビューコメントと CI ステータスを確認し、問題を解�
 
 If you don't understand which PR you should look into, ask user first.
 
-## 2. Get review comments - MANDATORY EXECUTION
+## 2. Get review comments
 
-**CRITICAL**: You MUST actually execute these commands and retrieve ALL comments. Do not skip this step or make assumptions about what comments exist.
-
-**EXECUTION REQUIREMENT**: You MUST run ALL of these commands and display the raw output before proceeding to evaluation.
+Run all of these commands and show their raw output before evaluating anything. Reviews are stored in three separate places, and a comment you never retrieved cannot show up later in the evaluation, so skipping one silently drops findings.
 
 ### To get active inline code review comments (excluding minimized):
 
@@ -35,7 +33,7 @@ gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments --paginate --jq '
 
 ```bash
 gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate --jq '
-  [.[] | select(has("body") and .body)]
+  [.[] | select((.body // "") != "")]
   | group_by(.user.login)
   | map(sort_by(.submitted_at) | reverse | .[0])
   | sort_by(.submitted_at) | reverse
@@ -65,9 +63,9 @@ gh pr view [PR_NUMBER] --comments
 - ✅ Bot comments from GitHub Actions (unless relevant)
 - ✅ Empty review bodies
 
-## 2.5. Verify completeness - MANDATORY CHECKLIST
+## 2.5. Verify completeness
 
-**STOP**: Before proceeding to evaluation, you MUST complete this verification checklist and report the results:
+Before evaluating, complete this checklist and report the results. The counts here are what step 3 is checked against:
 
 ### Verification Checklist:
 
@@ -81,15 +79,15 @@ gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments --paginate --jq '[.[] | s
 gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/comments --paginate --jq '[.[] | select(has("minimized_reason") | not) | .user.login] | unique'
 
 # Count review summaries
-gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate --jq '[.[] | select(has("body") and .body)] | group_by(.user.login) | length'
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate --jq '[.[] | select((.body // "") != "")] | group_by(.user.login) | length'
 
 # List all reviewers who left review summaries
-gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate --jq '[.[] | select(has("body") and .body)] | .user.login] | unique'
+gh api repos/{owner}/{repo}/pulls/{PR_NUMBER}/reviews --paginate --jq '[.[] | select((.body // "") != "") | .user.login] | unique'
 ```
 
-### Report format (MANDATORY):
+### Report format
 
-You MUST create a summary table like this BEFORE evaluation:
+Create a summary table like this before evaluating:
 
 ```
 ## Comment Retrieval Verification
@@ -118,14 +116,12 @@ You MUST create a summary table like this BEFORE evaluation:
 - [ ] Cross-checked claimed vs actual comment counts
 - [ ] Ready to proceed to evaluation
 
-**DO NOT PROCEED** until all checkboxes are marked.
+Move on to evaluation once every checkbox is marked.
 ```
 
 ## 3. Evaluate and prioritize issues
 
-**CRITICAL**: You MUST independently evaluate EVERY review comment that was verified in step 2.5, regardless of the reviewer's suggested priority.
-
-**Count verification**: The number of comments you evaluate MUST match the count from step 2.5. If you verified 11 inline comments, you MUST evaluate all 11.
+Evaluate every review comment counted in step 2.5 yourself, whatever priority the reviewer gave it. The number of comments you evaluate should match the count from step 2.5 (11 inline comments verified means 11 evaluated); a mismatch means one was dropped.
 
 **IMPORTANT**: The category (🔴 critical, ⚠️ issue, 💡 suggestion) is just a label from the reviewer. Your decision must be based ONLY on:
 - Actual impact on code quality
@@ -135,8 +131,8 @@ You MUST create a summary table like this BEFORE evaluation:
 A "suggestion" with high impact and low cost should be fixed. An "issue" that's actually a false positive should be skipped. **Never defer something simply because it's labeled as a "suggestion".**
 
 **DEFERRAL RULE**: You can ONLY defer a finding when it is **explicitly planned in a future task**. Before deciding to defer:
-1. Check `.spec-workflow/specs/*/tasks.md` for pending tasks that would address the finding
-2. If a future task exists, cite the task number when deferring
+1. Check the project's task tracking (e.g. `.spec-workflow/specs/*/tasks.md`, `openspec/changes/*/tasks.md`, or open issues) for a pending task that would address the finding
+2. If a future task exists, cite the task number or issue number when deferring
 3. If NO future task exists, you must either **FIX NOW** or **SKIP** (with justification)
 4. "Nice-to-have" items without future tasks should be implemented if cost is low
 
@@ -160,28 +156,28 @@ A "suggestion" with high impact and low cost should be fixed. An "issue" that's 
 - **Category**: 🔴 Critical
 - **Impact**: High - ensures error handling works correctly
 - **Cost**: Medium - need to add 2-3 test cases
-- **Alignment**: Follows AGENTS.md testing requirements
+- **Alignment**: Follows the project's testing rules
 - **Future task**: No
 - **Decision**: ✅ FIX NOW
 - **Reasoning**: High impact on correctness, aligns with project standards, reasonable effort
 
-## Review Comment #2: Extract complex composable into separate function
+## Review Comment #2: Extract a long function into smaller ones
 - **Category**: 💡 Suggestion
 - **Impact**: Medium - improves readability and reusability
 - **Cost**: Low - straightforward refactoring
-- **Alignment**: Follows Compose best practices in AGENTS.md
+- **Alignment**: Matches the project's style rules
 - **Future task**: No
 - **Decision**: ✅ FIX NOW
 - **Reasoning**: Good impact/cost ratio, aligns with project patterns, low cost = do it now
 
-## Review Comment #3: Add notification helper implementation binding
+## Review Comment #3: Wire up the missing implementation of an interface
 - **Category**: 🔴 Critical
-- **Impact**: High - required for Hilt DI
+- **Impact**: High - required at runtime
 - **Cost**: Low - stub implementation needed
 - **Alignment**: Required for runtime
-- **Future task**: Yes - Task 20 "Create ReminderNotificationHelper implementation"
-- **Decision**: ⏭️ DEFER to Task 20
-- **Reasoning**: Explicitly planned in Task 20, not needed until UI integration (Tasks 27-30)
+- **Future task**: Yes - task 4.2 "Implement the interface" in the change's tasks.md
+- **Decision**: ⏭️ DEFER to task 4.2
+- **Reasoning**: Explicitly planned in task 4.2, and nothing calls it until a later task
 
 ## Review Comment #4: Use named parameters for Java API call
 - **Category**: ⚠️ Issue
@@ -195,7 +191,7 @@ A "suggestion" with high impact and low cost should be fixed. An "issue" that's 
 ## Review Comment #5: Add logging for debugging
 - **Category**: 💡 Suggestion
 - **Impact**: Medium - helps with production debugging
-- **Cost**: Low - add a few Timber.d() calls
+- **Cost**: Low - add a few debug log calls
 - **Alignment**: Good practice for observability
 - **Future task**: No
 - **Decision**: ✅ FIX NOW
@@ -212,7 +208,7 @@ After evaluating all comments, present your complete analysis to the user with:
 
 **Verification before proceeding**:
 - Confirm: "I have evaluated all [count] inline comments and [count] review summaries verified in step 2.5"
-- If counts don't match, STOP and go back to retrieve missing comments
+- If counts don't match, stop and go back to retrieve missing comments
 
 **Then wait for user confirmation before proceeding with fixes.**
 
@@ -284,11 +280,11 @@ Approved entries land as **separate commits** scoped `docs(claude): ...` (or the
 
 ## 4. Create commits
 
-You MUST create one commit for each problem you fix.
+Create one commit for each problem you fix, unless the repository's conventions say otherwise.
 
 ## 5. Verify changes
 
-Check if the build, test and lint succeeds once you finished fixing:
+Once you finish fixing, run the build, tests, and lint that the project's instructions name (CLAUDE.md, rule files, CI config). For example, in an Android project:
 
 ```bash
 ./gradlew assembleDebug testDebugUnitTest lint
