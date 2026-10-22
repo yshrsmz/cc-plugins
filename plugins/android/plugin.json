@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "android",
+  "version": "2.1.0",
+  "description": "Android development best practices, code generation, and debugging assistance",
+  "author": {
+    "name": "yshrsmz"
+  },
+  "license": "Apache-2.0",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "android",
+        "shortDescription": "Android development reviews",
+        "developerName": "yshrsmz",
+        "category": "Productivity",
+        "capabilities": []
+      }
+    }
+  }
+}

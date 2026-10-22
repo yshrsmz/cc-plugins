@@ -1,10 +1,12 @@
 ---
 name: renovate-pr-review
 description: >-
-  Renovate (や Dependabot) が作成した依存更新 PR を対象に、各パッケージの changelog を並列調査し、破壊的変更への追随・新 API の採用判断・関連ファイルの同期更新までを行う。npm/pnpm/yarn・Cargo・Gradle/Maven・GitHub Actions の manifest を自動検出し、プロジェクトの実行基盤（CLAUDE.md / CI 設定）に従ってビルドとテストを走らせる。「この Renovate PR 見て」「依存更新 PR 対応して」「bump 系 PR の中身チェック」といった依頼で必ず使用する。
+  Renovate (や Dependabot) が作成した依存更新 PR を対象に、各パッケージの changelog を並列調査し、破壊的変更への追随・新 API の採用判断・関連ファイルの同期更新までを行う。npm/pnpm/yarn・Cargo・Gradle/Maven・GitHub Actions の manifest を自動検出し、プロジェクトの実行基盤（AGENTS.md / CLAUDE.md / CI 設定）に従ってビルドとテストを走らせる。「この Renovate PR 見て」「依存更新 PR 対応して」「bump 系 PR の中身チェック」といった依頼で必ず使用する。
 argument-hint: "[PR number] [--auto-push]"
 disable-model-invocation: true
 ---
+
+Before executing, read the [Claude Code / Codex runtime instructions](../../references/runtime.md).
 
 # Renovate PR Review
 
@@ -62,7 +64,7 @@ git diff origin/<base-branch>...HEAD --name-only
 
 `dependencies`（runtime に影響する = コード挙動が変わり得る）と `devDependencies`（ビルド/テスト時のみ）で優先度を分ける。
 
-**サブエージェント並列実行** で各パッケージの changelog を取得する。同一メッセージ内に複数の Agent 呼び出しを並べることで並列化される。
+**サブエージェント並列実行** で各パッケージの changelog を取得する。Claude Code では同一メッセージ内に複数の Agent 呼び出しを並べる。Codex では利用可能なサブエージェント機能を使い、同時実行上限を超える分は分割して全件の完了を待つ。
 
 ### サブエージェント依頼テンプレート
 
@@ -143,7 +145,7 @@ Exclude noise (internal refactors, unrelated feature areas).
 2. コード修正 (ADOPT / MIGRATE)
 3. 対応テスト追加 / 既存テスト更新 (ADOPT の場合**必ずテストを伴わせる**)
 4. 設定ファイル追随 (FOLLOW-UP)
-5. プロジェクト指示にあるビルド成果物の再生成（手順は CLAUDE.md / CONTRIBUTING.md 等に記載されているはず）
+5. プロジェクト指示にあるビルド成果物の再生成（手順は AGENTS.md / CLAUDE.md / CONTRIBUTING.md 等に記載されているはず）
 
 ### テストなしの ADOPT は禁止
 
@@ -173,7 +175,7 @@ Exclude noise (internal refactors, unrelated feature areas).
 
 ## 7. Verify
 
-プロジェクトの CLAUDE.md / CI 設定に記載された検証コマンドを実行する。典型的には以下のような組み合わせ:
+プロジェクトの AGENTS.md / CLAUDE.md / CI 設定に記載された検証コマンドを実行する。典型的には以下のような組み合わせ:
 
 | エコシステム | 検証コマンド (例) |
 |------------|-----------------|
@@ -205,7 +207,7 @@ Renovate の元コミットは**改変しない**。その上に追加コミッ�
 
 プロジェクトのスタイルに従う (`git log --oneline -10` で直近のスタイルを把握)。Conventional Commits を使う repo では type を合わせる。
 
-Claude Code の attribution は、プロジェクトの直近 commit が付与していれば同じ形式で付ける。
+使用しているホストの attribution は、プロジェクトの直近 commit が付与していれば同じ形式で付ける。
 
 ## 9. Pre-push summary（ユーザー確認）
 

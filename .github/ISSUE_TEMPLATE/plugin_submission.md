@@ -20,9 +20,10 @@ Provide a clear description of what your plugin does and why it's useful.
 ## Checklist
 
 - [ ] I have read [CONTRIBUTING.md](../../CONTRIBUTING.md)
-- [ ] Plugin includes `plugin.json` manifest
+- [ ] Plugin includes both `.claude-plugin/plugin.json` and portable `plugin.json` manifests with matching name and version
+- [ ] Plugin is registered in both marketplace catalogs
 - [ ] Plugin includes detailed `README.md`
-- [ ] Plugin has been tested locally
+- [ ] Plugin has been validated for both Claude Code and Codex (include any untested host behavior below)
 - [ ] Plugin follows naming conventions (kebab-case)
 - [ ] No secrets or credentials included
 - [ ] License specified (Apache-2.0 recommended)

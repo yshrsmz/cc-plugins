@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "meta",
+  "version": "0.3.0",
+  "description": "Meta-workflow skills for Claude Code and Codex: session retrospective, rule capture, skill authoring helpers",
+  "author": {
+    "name": "yshrsmz"
+  },
+  "license": "Apache-2.0",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "meta",
+        "shortDescription": "Capture session learnings",
+        "developerName": "yshrsmz",
+        "category": "Productivity",
+        "capabilities": []
+      }
+    }
+  }
+}

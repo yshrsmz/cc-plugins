@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "github",
+  "version": "3.1.0",
+  "description": "Git/GitHub safety rules and PR review workflows",
+  "author": {
+    "name": "yshrsmz"
+  },
+  "license": "Apache-2.0",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "github",
+        "shortDescription": "Git and PR workflows",
+        "developerName": "yshrsmz",
+        "category": "Productivity",
+        "capabilities": []
+      }
+    }
+  }
+}

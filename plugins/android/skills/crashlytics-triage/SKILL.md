@@ -4,6 +4,8 @@ description: >-
   Investigate Firebase Crashlytics crash reports for an Android app via the Firebase MCP tools: post-release health checks (find new/increased issues since a release, compare against the previous period) and deep dives into a specific crash issue (stack traces, logs, breadcrumbs, suspect commit). Trigger when the user asks to check Crashlytics, "クラッシュ確認して", "クラッシュ増えてない?", asks whether a release introduced new crashes, or wants a specific crash/ANR/non-fatal issue investigated.
 ---
 
+Before executing, read the [Claude Code / Codex runtime instructions](../../references/runtime.md).
+
 # Crashlytics Triage
 
 Investigate Crashlytics data for the current Android project. Two modes:
@@ -13,7 +15,7 @@ Investigate Crashlytics data for the current Android project. Two modes:
 
 ## Prerequisites
 
-The Firebase MCP tools (`mcp__*firebase*__crashlytics_*`) must be available. If they are deferred, load everything you need in ONE ToolSearch call:
+The Firebase MCP tools (`mcp__*firebase*__crashlytics_*`) must be available. Discover the actual names as described in [runtime.md](../../references/runtime.md). In Claude Code, if they are deferred, load everything you need in ONE ToolSearch call:
 
 ```
 ToolSearch "select:mcp__plugin_firebase_firebase__crashlytics_get_report,mcp__plugin_firebase_firebase__crashlytics_get_issue,mcp__plugin_firebase_firebase__crashlytics_list_events,mcp__plugin_firebase_firebase__crashlytics_batch_get_events"
@@ -21,7 +23,7 @@ ToolSearch "select:mcp__plugin_firebase_firebase__crashlytics_get_report,mcp__pl
 
 (Adjust the prefix to whatever the connected Firebase MCP server uses.)
 
-If no Firebase MCP server is connected at all, do NOT improvise with REST calls. The android plugin declares a dependency on the `firebase` plugin (from the `firebase` marketplace), but dependency resolution is silently skipped when that marketplace is not registered on the user's machine. Tell the user to run:
+If no Firebase MCP server is connected at all, do NOT improvise with REST calls. In Codex, follow the connection guidance in runtime.md and stop until tools are available. The following installation instructions apply only to Claude Code: the android plugin declares a dependency on the `firebase` plugin (from the `firebase` marketplace), but dependency resolution is silently skipped when that marketplace is not registered on the user's machine. Tell the user to run:
 
 ```
 claude plugin marketplace add firebase/firebase-tools
@@ -36,8 +38,8 @@ then restart the session (or `/reload-plugins`) so the Firebase MCP tools become
 
 Every Crashlytics call needs a Firebase App ID (`1:NNNN:android:XXXX`).
 
-1. Check project docs/memory first — CLAUDE.md, `.claude/rules/`, or auto-memory often record it.
-2. Otherwise resolve it via `firebase_list_apps` / `firebase_get_environment` (load via ToolSearch if needed).
+1. Check project docs/memory first — AGENTS.md, CLAUDE.md, referenced rule files, or the host's memory may record it.
+2. Otherwise resolve it via `firebase_list_apps` / `firebase_get_environment` (discover the actual tool names if needed).
 3. Prefer the **release** app (package without a `.debug`/`.dev` suffix). Debug builds have separate, mostly meaningless crash data.
 
 If you had to resolve it via the API, offer to save the ID to project memory so future runs skip this step.

@@ -1,14 +1,16 @@
 ---
 name: agent-review
 description: >-
-  Review code changes in an Android project (app or library) using a Claude Code Task subagent. Discovers project context at runtime; agent type can be overridden via argument.
+  Review code changes in an Android project (app or library) using a Claude Code or Codex subagent. Discovers project context at runtime; agent type can be overridden via argument.
 disable-model-invocation: true
 argument-hint: "[agent-type]"
 ---
 
-# Code Review with Task Agent
+Before executing, read the [Claude Code / Codex runtime instructions](../../references/runtime.md).
 
-Review the current changes in the repository using Claude Code's Task agent for in-depth analysis.
+# Code Review with a Subagent
+
+Review the current changes in the repository using the current host's subagent tools for in-depth analysis.
 
 ## Agent Type Selection
 
@@ -32,7 +34,7 @@ This plugin bundles two Android-specialized agents. Pick by project type.
 
 ## Steps to Execute
 
-Follow the **Common Command Instructions** from [review-base.md](review-base.md), with these Task agent-specific customizations.
+Follow the **Common Command Instructions** from [review-base.md](../templates/review-base.md), with these Task agent-specific customizations.
 
 ### 1. Determine Agent Type
 - If `$ARGUMENTS` is provided, use that as the subagent type
@@ -42,16 +44,16 @@ Follow the **Common Command Instructions** from [review-base.md](review-base.md)
 
 Execute steps 1–3 from the Common Command Instructions section in the template:
 - Verify changes exist
-- Discover project context (read CLAUDE.md, README, module layout — DO NOT hardcode project details)
+- Discover project context (read AGENTS.md, CLAUDE.md, README, module layout — DO NOT hardcode project details)
 - Gather environment context (pwd, branch, main branch)
 
 ### 3. Generate Task Agent-Specific Prompt
 
-Read the guidelines from [review-base.md](review-base.md) and follow Step 4 (Generate Customized Prompt), using these Task agent-specific introduction templates. Substitute the discovered project values — do NOT leave placeholders literal, and do NOT invent project context you did not actually find.
+Read the guidelines from [review-base.md](../templates/review-base.md) and follow Step 4 (Generate Customized Prompt), using these Task agent-specific introduction templates. Substitute the discovered project values — do NOT leave placeholders literal, and do NOT invent project context you did not actually find.
 
 **Introduction templates (all share the same tool-availability block):**
 
-Common tool availability block:
+Common tool availability block (Claude Code; in Codex describe only the tools actually available to the subagent):
 ```
 You are running as a Claude Code Task agent with access to:
 - Bash commands (git, grep, find, etc.)
@@ -143,13 +145,13 @@ module structure, and architectural patterns.
 ```
 
 **Then complete the prompt by:**
-- Replacing `[AVAILABLE_READ_TOOL]` with "Read tool" in git analysis instructions
+- Replacing `[AVAILABLE_READ_TOOL]` with the host's file-reading tool in git analysis instructions
 - Including all template sections as per Common Command Instructions Step 4
 - Emphasizing review criteria based on agent type AND project type (see template sections 4 and 5)
 
-### 4. Launch Task Agent
+### 4. Launch the Review Subagent
 
-Spawn the subagent via the `Task` tool with the fully customized prompt:
+In Claude Code, spawn the subagent via the `Task` / `Agent` tool with the fully customized prompt. In Codex, follow the agent-definition mapping in [runtime.md](../../references/runtime.md) and pass the selected definition body together with that prompt. The JSON below is Claude-specific:
 
 ```
 Tool: Task
@@ -183,11 +185,11 @@ Present the results directly to the user with clear sections as specified in the
 
 ## Comparison with /codex-review
 
-- **`/agent-review`**: Uses Claude Code's Task agent (subagent execution within current session)
+- **`/agent-review`**: Uses the current host's subagent tools (execution within the current session)
     - No external CLI dependencies
-    - Integrated with current Claude Code session
+    - Integrated with the current Claude Code or Codex session
     - Good for regular reviews
-    - Limited by Claude Code's standard rate limits
+    - Subject to the current host's rate limits
 
 - **`/codex-review`**: Shells out to the Codex CLI (`codex exec`, separate execution environment)
     - Separate execution context
@@ -195,4 +197,4 @@ Present the results directly to the user with clear sections as specified in the
     - Requires the `codex` CLI (0.154.0+) to be installed and authenticated
     - Subject to Codex rate limits
 
-Choose based on availability and preference. Both use the same review criteria from [review-base.md](review-base.md).
+Choose based on availability and preference. Both use the same review criteria from [review-base.md](../templates/review-base.md).

@@ -24,7 +24,7 @@ model: sonnet
 ## スコープ外（フラグしない）
 
 - バグ・セキュリティ問題（pr-review-bugs の担当）
-- CLAUDE.md / `.claude/rules/` に明文化された規約違反（pr-review-rules の担当）
+- AGENTS.md / CLAUDE.md / 参照される規約ファイル に明文化された規約違反（pr-review-rules の担当）
 - コードスタイル・フォーマット（リンターの担当）
 - 主観的な設計の好み
 

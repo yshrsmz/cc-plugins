@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "writing",
+  "version": "1.2.0",
+  "description": "Japanese prose editing: AI-generated-text detection plus redundancy, duplication, and consistency cleanup in a single pass",
+  "author": {
+    "name": "yshrsmz"
+  },
+  "license": "Apache-2.0",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "writing",
+        "shortDescription": "Japanese prose editing",
+        "developerName": "yshrsmz",
+        "category": "Productivity",
+        "capabilities": []
+      }
+    }
+  }
+}

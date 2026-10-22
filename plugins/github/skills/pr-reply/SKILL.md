@@ -6,6 +6,8 @@ argument-hint: "[PR number]"
 disable-model-invocation: true
 ---
 
+Before executing, read the [Claude Code / Codex runtime instructions](../../references/runtime.md).
+
 # PR Reply
 
 Reply to review comments with fix details and resolve threads. Run this in the same conversation AFTER `pr-check` has been executed and fixes have been committed and pushed.

@@ -6,6 +6,8 @@ argument-hint: "[PR number]"
 disable-model-invocation: true
 ---
 
+Before executing, read the [Claude Code / Codex runtime instructions](../../references/runtime.md).
+
 PR をレビューし、GitHub にインラインコメント付きレビューとして投稿する。
 
 ## 1. PR 番号の解決
@@ -23,7 +25,7 @@ PR をレビューし、GitHub にインラインコメント付きレビュー�
 
 ## 3. サブエージェントによる並列レビュー
 
-以下の 3 つのサブエージェントを **Agent ツールで並列に** spawn する。各エージェントには PR のタイトル・説明・差分をプロンプトとして渡す。
+以下の 3 つのサブエージェントを **並列に** spawn する。Claude Code では Agent ツールと下記の `subagent_type` を使う。Codex では [runtime.md](../../references/runtime.md) に従い、対応する定義本文をそれぞれ汎用サブエージェントへ渡す。各エージェントには PR のタイトル・説明・差分をプロンプトとして渡す。
 
 ### pr-review-bugs（subagent_type: github:pr-review-bugs）
 
@@ -31,7 +33,7 @@ PR をレビューし、GitHub にインラインコメント付きレビュー�
 
 ### pr-review-rules（subagent_type: github:pr-review-rules）
 
-CLAUDE.md / `.claude/rules/` への準拠チェック。
+AGENTS.md / CLAUDE.md / 参照される規約ファイルへの準拠チェック。
 
 ### pr-review-quality（subagent_type: github:pr-review-quality）
 

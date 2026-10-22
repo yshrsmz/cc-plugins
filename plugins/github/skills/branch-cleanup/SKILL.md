@@ -4,6 +4,8 @@ description: >-
   マージ済みの PR に対応するローカルブランチと、それをチェックアウトしている worktree を、head SHA を照合して安全に削除する。squash merge されたブランチは `git branch -d` も `git branch --merged` も判定できないため、GitHub 側の情報で確認する。「ブランチを整理して」「マージ済みブランチを消して」「マージ済みの worktree を片付けて」「clean up branches」「prune branches」と言われたとき、および「マージしたのに `git branch -d` が拒否する」「マージ済みのブランチが消せない」「worktree があるせいでブランチが消せない」と相談されたときに使う。リモートブランチの削除、未マージのブランチや未マージ PR の worktree を消す作業には使わない。
 ---
 
+Before executing, read the [Claude Code / Codex runtime instructions](../../references/runtime.md).
+
 # Branch Cleanup
 
 マージ済みのローカルブランチと、それをチェックアウトしている worktree を削除する。
@@ -44,13 +46,13 @@ ignore 済みファイル（`.env`、ローカル DB、認証情報）を置く�
 
 1. **スクリプトを実行する**
 
+   この SKILL.md の絶対パスをもとに、同じディレクトリ内の `scripts/prune-merged-branches.sh` を絶対パスに解決する。ホストが読み込んだインストール済みスキルの場所を使い、対象リポジトリの cwd から相対解決しない。
+
    ```bash
-   bash "${CLAUDE_PLUGIN_ROOT}/skills/branch-cleanup/scripts/prune-merged-branches.sh"
+   bash "<absolute-path-to-this-skill>/scripts/prune-merged-branches.sh"
    ```
 
-   `${CLAUDE_PLUGIN_ROOT}` が空になる場合（プラグインではなく `.claude/skills/` に
-   直接置かれているとき）は、この SKILL.md と同じディレクトリの
-   `scripts/prune-merged-branches.sh` を絶対パスに直して実行する。
+   `<absolute-path-to-this-skill>` は実際のスキルのディレクトリに置き換える。Claude Code と Codex のどちらでもこの方法を使い、プラグイン固有の環境変数には依存しない。
 
    `chmod +x` はしない。`bash` に渡して実行する。
 

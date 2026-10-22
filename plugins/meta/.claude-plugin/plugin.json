@@ -1,7 +1,7 @@
 {
     "name": "meta",
-    "version": "0.2.2",
-    "description": "Meta-workflow skills for Claude Code itself: session retrospective, rule capture, skill authoring helpers",
+    "version": "0.3.0",
+    "description": "Meta-workflow skills for Claude Code and Codex: session retrospective, rule capture, skill authoring helpers",
     "author": {
         "name": "yshrsmz"
     }

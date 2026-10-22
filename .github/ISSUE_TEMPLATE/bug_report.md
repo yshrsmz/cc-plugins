@@ -10,7 +10,7 @@ assignees: ''
 
 **Plugin Name:**
 **Plugin Version:**
-**Claude Code Version:**
+**Host (Claude Code / Codex) and Version:**
 
 ## Description
 
@@ -40,7 +40,7 @@ Paste any error messages here
 
 - OS: [e.g., macOS 14.0, Ubuntu 22.04]
 - Shell: [e.g., zsh, bash]
-- Claude Code Version:
+- Host (Claude Code / Codex) and version:
 
 ## Additional Context
 
