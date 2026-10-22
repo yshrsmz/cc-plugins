@@ -50,7 +50,7 @@ class NativeHostTests(unittest.TestCase):
             data = json.loads(result.stdout)
             plugins = data["installed"] + data["available"]
             self.assertEqual({plugin["name"] for plugin in plugins},
-                             {"android", "github", "meta", "writing"})
+                             {"android", "code-quality", "github", "meta", "writing"})
             for plugin in plugins:
                 manifest = json.loads((root / "plugins" / plugin["name"] / "plugin.json").read_text())
                 self.assertEqual(plugin["version"], manifest["version"])
@@ -100,7 +100,7 @@ class NativeHostTests(unittest.TestCase):
                     process.stdin.write('{"jsonrpc":"2.0","method":"initialized"}\n')
                     process.stdin.flush()
                     total = 0
-                    for identifier, name in enumerate(("android", "github", "meta", "writing"), 2):
+                    for identifier, name in enumerate(("android", "code-quality", "github", "meta", "writing"), 2):
                         with self.subTest(plugin=name):
                             detail = request(identifier, "plugin/read", {
                                 "marketplacePath": str(root / ".agents/plugins/marketplace.json"),
@@ -118,7 +118,7 @@ class NativeHostTests(unittest.TestCase):
                                 self.assertTrue(Path(skill["path"]).is_relative_to(root))
                                 self.assertTrue(Path(skill["path"]).is_file())
                             total += len(expected)
-                    self.assertEqual(total, 13)
+                    self.assertEqual(total, 14)
                 finally:
                     process.terminate()
                     try:

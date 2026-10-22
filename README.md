@@ -107,7 +107,7 @@ codex plugin list --marketplace yshrsmz-cc-plugins --available
 codex plugin add github@yshrsmz-cc-plugins
 ```
 
-`github` は `android`、`meta`、`writing` に置き換えられます。CLI に `plugin add` がない環境では、デスクトップアプリのプラグイン一覧でこのマーケットプレースを選び、インストールしてください。更新には `codex plugin marketplace upgrade yshrsmz-cc-plugins` を使い、新しいセッションでスキルを確認します。
+`github` は `android`、`code-quality`、`meta`、`writing` に置き換えられます。CLI に `plugin add` がない環境では、デスクトップアプリのプラグイン一覧でこのマーケットプレースを選び、インストールしてください。更新には `codex plugin marketplace upgrade yshrsmz-cc-plugins` を使い、新しいセッションでスキルを確認します。
 
 ローカルの変更を試す場合は、GitHub の指定の代わりにチェックアウトしたリポジトリの絶対パスを登録します。
 
@@ -124,7 +124,7 @@ Codex のプロジェクト設定で有効・無効を指定する場合は、�
 enabled = true
 ```
 
-`agents/*.md` は Claude Code のエージェント定義です。Codex では `agent-review` と `pr-review` がその本文を汎用サブエージェントへ渡します。プラグインの導入だけでは、これらは Codex の名前付きカスタムエージェントとして登録されません。並列処理を行うスキルにはサブエージェント機能が必要で、`deai` には会話を継承しないサブエージェントが必要です。手動起動限定のスキルは、両環境で自動起動を無効にしています。
+`agents/*.md` は Claude Code のエージェント定義です。Codex では `agent-review`、`pr-review`、`simplify` がその本文を汎用サブエージェントへ渡します。プラグインの導入だけでは、これらは Codex の名前付きカスタムエージェントとして登録されません。`simplify` はサブエージェント機能がなければ逐次レビューします。他の並列処理を行うスキルにはサブエージェント機能が必要で、`deai` には会話を継承しないサブエージェントが必要です。手動起動限定のスキルは、両環境で自動起動を無効にしています。
 
 Firebase Crashlytics を使う場合、Codex 側には Firebase MCP の接続・認証が別途必要です。Claude Code の `firebase` プラグイン依存は Codex には適用されません。このリポジトリから Firebase ツールをインストールする処理はありません。
 
@@ -147,6 +147,16 @@ Android development best practices, code generation, and debugging assistance.
 **Agents:**
 - `android-compose-architect` - Android アーキテクチャと Jetpack Compose 実装の設計・リファクタリング
 - `android-library-architect` - Android ライブラリの公開 API 設計・Java 相互運用・スレッド安全性のレビュー
+
+### code-quality
+
+Language-independent code simplification for Claude Code and Codex.
+
+**Skills:**
+
+- `/simplify` - 明示起動限定。ベースブランチとの差分全体と未コミット変更を再利用・品質・効率の3観点でレビューし、振る舞いを維持して修正・検証する。委譲機能がなければ逐次レビューする
+
+詳細は [code-quality README](plugins/code-quality/README.md) を参照してください。
 
 ### github
 Git/GitHub safety rules and PR review workflows.

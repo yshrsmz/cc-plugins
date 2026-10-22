@@ -17,6 +17,11 @@
       "description": "Android development best practices, code generation, and debugging assistance"
     },
     {
+      "name": "code-quality",
+      "source": "./plugins/code-quality",
+      "description": "Behavior-preserving code simplification through reuse, quality, and efficiency review"
+    },
+    {
       "name": "github",
       "source": "./plugins/github",
       "description": "Git/GitHub safety rules and PR review workflows"
