@@ -5,24 +5,26 @@ description: >-
 disable-model-invocation: true
 ---
 
+Before executing, read the [Claude Code / Codex runtime instructions](../../references/runtime.md).
+
 # Code Review with Codex
 
 Review the current changes in the repository using Codex for in-depth analysis.
 
 ## Steps to Execute
 
-Follow the **Common Command Instructions** from [review-base.md](review-base.md), with these Codex-specific customizations.
+Follow the **Common Command Instructions** from [review-base.md](../templates/review-base.md), with these Codex-specific customizations.
 
 ### 1–3. Follow Common Steps
 
 Execute steps 1–3 from the Common Command Instructions section in the template:
 - Verify changes exist
-- Discover project context (read CLAUDE.md, README, module layout — DO NOT hardcode project details)
+- Discover project context (read AGENTS.md, CLAUDE.md, README, module layout — DO NOT hardcode project details)
 - Gather environment context (pwd, branch, main branch)
 
 ### 4. Generate Codex-Specific Prompt
 
-Read the guidelines from [review-base.md](review-base.md) and follow Step 4 (Generate Customized Prompt), using this Codex-specific introduction template. Substitute discovered project values — do NOT leave placeholders literal, and do NOT invent project context you did not actually find.
+Read the guidelines from [review-base.md](../templates/review-base.md) and follow Step 4 (Generate Customized Prompt), using this Codex-specific introduction template. Substitute discovered project values — do NOT leave placeholders literal, and do NOT invent project context you did not actually find.
 
 **Codex-Specific Introduction Template:**
 
@@ -101,7 +103,7 @@ Present the results directly to the user with clear sections as specified in the
 
 ## Usage
 
-Simply type `/codex-review` in Claude Code to trigger this review workflow.
+In Claude Code, invoke `/android:codex-review`. In Codex, select `codex-review` from the installed skills or explicitly request it. Both hosts run the same separate `codex exec` process.
 
 ## Comparison with /agent-review
 
@@ -110,8 +112,8 @@ Simply type `/codex-review` in Claude Code to trigger this review workflow.
     - May have different resource allocation
     - Requires the `codex` CLI (0.154.0+) to be installed and authenticated
 
-- **`/agent-review`**: Uses Claude Code's Task agent (subagent within current session)
+- **`/agent-review`**: Uses the current host's subagent tools (subagent within the current session)
     - No external CLI dependencies
-    - Integrated with current Claude Code session
+    - Integrated with the current Claude Code or Codex session
 
-Both use the same review criteria from [review-base.md](review-base.md).
+Both use the same review criteria from [review-base.md](../templates/review-base.md).

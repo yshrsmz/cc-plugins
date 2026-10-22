@@ -31,6 +31,15 @@ Install via the `yshrsmz-cc-plugins` marketplace:
 /plugin install writing@yshrsmz-cc-plugins
 ```
 
+### Codex
+
+```bash
+codex plugin marketplace add yshrsmz/cc-plugins
+codex plugin add writing@yshrsmz-cc-plugins
+```
+
+Select `deai` from the installed skills or name it explicitly in your request. Both hosts use the same skill files. Codex must provide subagents that start without conversation inheritance. Models inherit from the Codex session; Claude model names are not passed to Codex. The two detectors run in parallel, and all later phases wait for completion. If isolated subagents are unavailable, the skill reports that prerequisite and stops. The fork behavior described above is specific to Claude Code.
+
 ## License
 
 Apache-2.0

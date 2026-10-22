@@ -4,9 +4,11 @@ description: >-
   Safe git operation guidelines. Use when performing any git operations including commits, branching, merging, rebasing, pushing, pull request creation, or any other git-related tasks.
 ---
 
+Before executing, read the [Claude Code / Codex runtime instructions](../../references/runtime.md).
+
 # Git Operations Safety Guidelines
 
-These are defaults. The project's instructions (CLAUDE.md, rule files, memory) and the session's instructions take precedence where they differ, such as the commit message language, attribution lines, or whether to commit and push without asking.
+These are defaults. The project's instructions (AGENTS.md, CLAUDE.md, rule files, memory) and the session's instructions take precedence where they differ, such as the commit message language, attribution lines, or whether to commit and push without asking.
 
 ## Git Safety Protocol
 

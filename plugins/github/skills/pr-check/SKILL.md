@@ -6,6 +6,8 @@ argument-hint: "[PR number]"
 disable-model-invocation: true
 ---
 
+Before executing, read the [Claude Code / Codex runtime instructions](../../references/runtime.md).
+
 # PR Check
 
 PR のレビューコメントと CI ステータスを確認し、問題を解決する。
@@ -233,12 +235,12 @@ If any of the three is "no", skip that comment.
 
 ### Target files
 
-Pick the location that best matches the nature of the rule:
+Pick the location that best matches the nature of the rule, using the host-specific destinations in [runtime.md](../../references/runtime.md). The `.claude/` locations below apply to Claude Code; in Codex, use `AGENTS.md` or `.agents/skills/<name>/SKILL.md`:
 
 - `.claude/rules/*.md` — reference knowledge loaded automatically via globs (use when the rule applies to a specific file pattern)
 - `.claude/skills/*.md` — workflow / procedure that can be invoked (use when the rule is a multi-step process)
 - `CLAUDE.md` — project-wide always-on guidance (use sparingly; only for rules that apply everywhere)
-- `AGENTS.md` — agent-specific guidance
+- `AGENTS.md` — shared project guidance for Codex and other agents; also use it when CLAUDE.md imports it
 - Other project-specific standards files (e.g. `CONTRIBUTING.md`, style guides)
 
 ### Proposal table format
@@ -284,7 +286,7 @@ Create one commit for each problem you fix, unless the repository's conventions 
 
 ## 5. Verify changes
 
-Once you finish fixing, run the build, tests, and lint that the project's instructions name (CLAUDE.md, rule files, CI config). For example, in an Android project:
+Once you finish fixing, run the build, tests, and lint that the project's instructions name (AGENTS.md, CLAUDE.md, rule files, CI config). For example, in an Android project:
 
 ```bash
 ./gradlew assembleDebug testDebugUnitTest lint

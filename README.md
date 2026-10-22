@@ -1,8 +1,8 @@
-# Claude Code Plugins
+# Claude Code / Codex Plugins
 
-A community-driven marketplace for Claude Code extensions and plugins.
+A community-driven plugin marketplace for Claude Code and Codex. Both hosts share the skills under `plugins/`; each host has its own marketplace catalog and manifest.
 
-## Quick Start
+## Quick Start: Claude Code
 
 ### 1. マーケットプレースを追加する
 
@@ -97,19 +97,52 @@ claude plugin install <plugin-name>@yshrsmz-cc-plugins --scope local
 
 `Installed` タブでスコープごとにグループ化されたプラグイン一覧を確認できます。
 
+## Quick Start: Codex
+
+Codex CLI 0.163.0 でカタログの認識を確認しています。プラグイン機能を利用できる Codex CLI またはデスクトップアプリを使ってください。
+
+```bash
+codex plugin marketplace add yshrsmz/cc-plugins
+codex plugin list --marketplace yshrsmz-cc-plugins --available
+codex plugin add github@yshrsmz-cc-plugins
+```
+
+`github` は `android`、`meta`、`writing` に置き換えられます。CLI に `plugin add` がない環境では、デスクトップアプリのプラグイン一覧でこのマーケットプレースを選び、インストールしてください。更新には `codex plugin marketplace upgrade yshrsmz-cc-plugins` を使い、新しいセッションでスキルを確認します。
+
+ローカルの変更を試す場合は、GitHub の指定の代わりにチェックアウトしたリポジトリの絶対パスを登録します。
+
+```bash
+codex plugin marketplace add /absolute/path/to/cc-plugins
+```
+
+インストール後はスキル選択から対象スキルを選ぶか、依頼文でスキル名を明示します。以下の一覧の `/skill-name` 表記は Claude Code 向けの省略形です。Claude Code では `/github:pr-review` のようにプラグイン名で修飾できます。Codex では同じスキル名を選択して使います。
+
+Codex のプロジェクト設定で有効・無効を指定する場合は、信頼済みプロジェクトの `.codex/config.toml` に次を設定します。マーケットプレースの登録・プラグインの導入は別途必要です。
+
+```toml
+[plugins."github@yshrsmz-cc-plugins"]
+enabled = true
+```
+
+`agents/*.md` は Claude Code のエージェント定義です。Codex では `agent-review` と `pr-review` がその本文を汎用サブエージェントへ渡します。プラグインの導入だけでは、これらは Codex の名前付きカスタムエージェントとして登録されません。並列処理を行うスキルにはサブエージェント機能が必要で、`deai` には会話を継承しないサブエージェントが必要です。手動起動限定のスキルは、両環境で自動起動を無効にしています。
+
+Firebase Crashlytics を使う場合、Codex 側には Firebase MCP の接続・認証が別途必要です。Claude Code の `firebase` プラグイン依存は Codex には適用されません。このリポジトリから Firebase ツールをインストールする処理はありません。
+
+配布形式と設定の詳細は [OpenAI 公式ドキュメント](https://developers.openai.com/plugins/build/plugins)を参照してください。
+
 ## Available Plugins
 
-各プラグインは Agent Skills（`/<skill-name>` で起動、または文脈に応じて自動起動）と Subagents（特定タスクに特化したエージェント）で構成されています。
+各プラグインは共通の Agent Skills と、必要に応じてサブエージェント向けの指示で構成されています。起動方法とエージェントの扱いは上記の各環境向け手順を参照してください。
 
 ### android
 Android development best practices, code generation, and debugging assistance.
 
 **Skills:**
-- `/agent-review` - Android プロジェクト（app / library）のコード変更を Claude Code の Task subagent でレビューする。プロジェクト文脈を実行時に検出
+- `/agent-review` - Android プロジェクト（app / library）のコード変更を Claude Code / Codex のサブエージェントでレビューする。プロジェクト文脈を実行時に検出
 - `/codex-review` - Android プロジェクトのコード変更を Codex CLI（`codex exec`）でレビューする
   - 前提: `codex` CLI 0.154.0 以降がインストール済みかつ認証済みであること
 - `/crashlytics-triage` - Firebase MCP 経由で Crashlytics のクラッシュレポートを調査する。リリース後のヘルスチェックと個別イシューの深掘りに対応
-  - 前提: firebase プラグインが必要（`firebase` マーケットプレースへの依存として自動インストールされる）。マーケットプレース未登録の場合は先に `claude plugin marketplace add firebase/firebase-tools` を実行すること
+  - Claude Code の前提: firebase プラグインが必要（`firebase` マーケットプレースへの依存として自動インストールされる）。マーケットプレース未登録の場合は先に `claude plugin marketplace add firebase/firebase-tools` を実行すること
 
 **Agents:**
 - `android-compose-architect` - Android アーキテクチャと Jetpack Compose 実装の設計・リファクタリング
@@ -131,13 +164,13 @@ Git/GitHub safety rules and PR review workflows.
 **Agents:**
 - `pr-review-bugs` - PR の差分からバグ・セキュリティ問題を検出する
 - `pr-review-quality` - PR の差分からコード品質（DRY・一貫性・パフォーマンス）の問題を検出する
-- `pr-review-rules` - PR の差分がプロジェクト規約（CLAUDE.md / .claude/rules/）に準拠しているかチェックする
+- `pr-review-rules` - PR の差分がプロジェクト規約（AGENTS.md / CLAUDE.md / 参照される規約ファイル）に準拠しているかチェックする
 
 ### meta
-Meta-workflow skills for Claude Code itself.
+Meta-workflow skills for Claude Code and Codex.
 
 **Skills:**
-- `/session-review` - 現在のセッションを振り返り、保存価値のある学び（プロジェクト固有の注意点・ユーザーの好み・再利用可能なワークフロー）を抽出し、適切な保存先（`.claude/rules/`, `CLAUDE.md`, 新規 skill など）に分類して提案・適用する
+- `/session-review` - 現在のセッションを振り返り、保存価値のある学び（プロジェクト固有の注意点・ユーザーの好み・再利用可能なワークフロー）を抽出し、実行環境に適した保存先（`AGENTS.md`, `.claude/rules/`, `CLAUDE.md`, 新規 skill など）に分類して提案・適用する
 
 ### writing
 Japanese prose editing: AI-generated-text detection plus redundancy, duplication, and consistency cleanup in a single pass.
@@ -148,10 +181,10 @@ Japanese prose editing: AI-generated-text detection plus redundancy, duplication
 ## Plugin Categories
 
 ### 🛠️ Skills
-`/` で起動できる、あるいは文脈に応じて自動起動する特化機能。ドメイン知識やワークフローを提供します。各プラグインの中心的な構成要素です。
+明示的に起動できる、あるいは文脈に応じて自動起動する特化機能。ドメイン知識やワークフローを提供します。各プラグインの中心的な構成要素です。
 
 ### 🤖 Subagents
-特定タスクに特化したエージェント定義。レビューやアーキテクチャ設計など、専門的な判断を委譲できます。
+特定タスクに特化した指示。Claude Code では名前付きエージェントとして使い、Codex では対応するスキルからサブエージェントへ指示を渡します。
 
 ### 🪝 Hooks / 🔌 MCP Servers / 💬 Slash Commands
 Claude Code のプラグインは hooks（イベント駆動のシェルコマンド）、MCP サーバー、スラッシュコマンドもサポートしています。現在このマーケットプレースのプラグインは主に Skills と Subagents で構成されています。
@@ -164,8 +197,8 @@ We welcome plugin contributions! See [CONTRIBUTING.md](./CONTRIBUTING.md) for de
 
 1. Fork this repository
 2. Create your plugin in the `plugins/` directory
-3. Add a `.claude-plugin/plugin.json` manifest
-4. Register your plugin in `.claude-plugin/marketplace.json`
+3. Add `.claude-plugin/plugin.json` and portable `plugin.json` manifests with matching identity and version
+4. Register your plugin in both `.claude-plugin/marketplace.json` and `.agents/plugins/marketplace.json`
 5. Submit a pull request
 
 ## Plugin Structure
@@ -177,6 +210,8 @@ plugins/
 └── your-plugin/
     ├── .claude-plugin/
     │   └── plugin.json      # Required: Plugin manifest (name, version, description, author)
+    ├── plugin.json          # Required: Agent Plugins 1.0 manifest for Codex
+    ├── references/          # Optional: shared runtime and domain instructions
     ├── commands/            # Optional: slash commands (.md)
     ├── skills/              # Optional: Agent Skills (<name>/SKILL.md)
     ├── agents/              # Optional: subagent definitions (.md)
@@ -184,12 +219,13 @@ plugins/
     └── .mcp.json            # Optional: MCP server definitions
 ```
 
-**Important**: `commands/`, `skills/`, `agents/`, `hooks/` go in the plugin root. Only `plugin.json` lives inside `.claude-plugin/`.
+**Important**: `commands/`, `skills/`, `agents/`, `hooks/` go in the plugin root. Only the Claude Code manifest lives inside `.claude-plugin/`; the portable `plugin.json` lives at the plugin root. Shared skills are discovered under `skills/<name>/SKILL.md`. For manual-only skills, include `skills/<name>/agents/openai.yaml` with `policy.allow_implicit_invocation: false`.
 
 ## Documentation
 
 - [Creating Plugins](https://docs.claude.com/en/docs/claude-code/creating-plugins)
 - [Plugin Marketplaces](https://docs.claude.com/en/docs/claude-code/plugin-marketplaces)
+- [Codex Plugin Packaging](https://developers.openai.com/plugins/build/plugins)
 - [Claude Code Documentation](https://docs.claude.com/en/docs/claude-code)
 
 ## Support
@@ -206,4 +242,4 @@ Individual plugins may have their own licenses - check each plugin's directory f
 
 ## Disclaimer
 
-These plugins are community-contributed and not officially supported by Anthropic. Review code before installation and use at your own discretion.
+These plugins are community-contributed and not officially supported by Anthropic or OpenAI. Review code before installation and use at your own discretion.

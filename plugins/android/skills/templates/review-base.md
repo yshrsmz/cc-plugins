@@ -31,7 +31,7 @@ Run `git status` to confirm there are changes to review.
 ### Step 2: Discover Project Context (REQUIRED)
 
 Before generating the prompt, gather project-specific context by reading (as available):
-- `CLAUDE.md` — project overview, build commands, architecture notes
+- `AGENTS.md`, `CLAUDE.md`, and their referenced rule files — project overview, build commands, architecture notes
 - `README.md` — high-level project description
 - `docs/design-docs/`, `docs/requirements/`, `docs/architecture/` — design and architecture documents
 - `build-logic/README.md` — build system conventions (if changes touch build config)
@@ -39,7 +39,7 @@ Before generating the prompt, gather project-specific context by reading (as ava
 - Any task-specific documentation from `docs/` related to the changes
 
 Use these to determine:
-- **Project name** (from CLAUDE.md, README, or directory name)
+- **Project name** (from AGENTS.md, CLAUDE.md, README, or directory name)
 - **Project type** (Android app vs. Android library vs. multi-module)
 - **Architecture style** (MVVM with Hilt, clean architecture, custom patterns, etc.)
 - **UI framework** (Jetpack Compose, legacy Views, both)
@@ -138,7 +138,7 @@ IMPORTANT: First, run git commands to understand what changed:
 ### 3. Project Documentation References
 ```
 Read any relevant project-specific documentation for additional context:
-- CLAUDE.md — project overview, build commands, git conventions
+- AGENTS.md, CLAUDE.md, and their referenced rule files — project overview, build commands, git conventions
 - docs/design-docs/ — design documents and architecture decisions (if exists)
 - docs/requirements/ — active specifications related to these changes (if exists)
 - build-logic/README.md — build system conventions (if changes involve build config)

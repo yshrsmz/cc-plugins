@@ -4,10 +4,12 @@
     "name": "yshrsmz"
   },
   "metadata": {
-    "description": "Claude Code plugin marketplace for yshrsmz's repositories",
-    "version": "0.8.0"
+    "description": "Claude Code and Codex plugin marketplace for yshrsmz's repositories",
+    "version": "0.9.0"
   },
-  "allowCrossMarketplaceDependenciesOn": ["firebase"],
+  "allowCrossMarketplaceDependenciesOn": [
+    "firebase"
+  ],
   "plugins": [
     {
       "name": "android",
@@ -22,7 +24,7 @@
     {
       "name": "meta",
       "source": "./plugins/meta",
-      "description": "Meta-workflow skills for Claude Code itself: session retrospective, rule capture, skill authoring helpers"
+      "description": "Meta-workflow skills for Claude Code and Codex: session retrospective, rule capture, skill authoring helpers"
     },
     {
       "name": "writing",

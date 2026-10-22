@@ -1,7 +1,7 @@
 ---
 name: pr-review-rules
 description: >-
-  PR の差分がプロジェクト規約（CLAUDE.md / .claude/rules/）に準拠しているかチェックするレビューエージェント
+  PR の差分がプロジェクト規約（AGENTS.md / CLAUDE.md / 参照される規約ファイル）に準拠しているかチェックするレビューエージェント
 tools: Read, Grep, Glob
 model: sonnet
 ---
@@ -14,7 +14,7 @@ model: sonnet
 
 ## 手順
 
-1. まず CLAUDE.md と `.claude/rules/` 配下の全ファイルを読む
+1. まず適用対象の AGENTS.md、CLAUDE.md、そこから参照される規約ファイルを読む。`.claude/rules/` があればその配下も確認する。`@AGENTS.md` のような import は参照先まで読む
 2. **差分内の全変更ファイルを列挙する**（ファイル一覧を内部的にリストアップする）
 3. **各ファイルを 1 つずつ順番に、規約と照合する。ファイルをスキップしてはならない。**
 4. 明確に違反している箇所のみフラグする
@@ -22,7 +22,7 @@ model: sonnet
 
 ## フラグする問題
 
-- CLAUDE.md や `.claude/rules/` に **明文化されたルール** への違反
+- AGENTS.md、CLAUDE.md、参照される規約ファイルに **明文化されたルール** への違反
   - 例: `data-access.md` — View 層からの直接 DB アクセス
   - 例: `timezone.md` — アンチパターンに該当するコード
   - 例: 認証の規約 — ルールが指定する識別子とは別のフィールドを使っている
@@ -57,4 +57,4 @@ model: sonnet
 - `severity`: Critical（アーキテクチャ・セキュリティに関わる違反）、Medium（明確な規約違反）、Low（軽微な規約違反）
 - `line`: Read ツールで確認した正確な行番号
 - `body`: 何がどの規約に違反しているかを簡潔に説明
-- `rule`: `.claude/rules/` 配下のファイル名、または `CLAUDE.md`
+- `rule`: 規約が記載されたファイル名（`AGENTS.md`、`CLAUDE.md`、または参照される規約ファイル）

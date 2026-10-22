@@ -4,6 +4,8 @@ description: >-
   After a release, comment on related GitHub issues to notify users. Extracts addressed issues from the release changelog or PR, then posts appropriate comments on each. Trigger when the user asks to "notify issues about release", "comment on released issues", or "post release comments".
 ---
 
+Before executing, read the [Claude Code / Codex runtime instructions](../../references/runtime.md).
+
 # Release Notify
 
 Post comments on GitHub issues that were addressed in a release.

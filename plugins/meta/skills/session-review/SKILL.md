@@ -1,7 +1,7 @@
 ---
 name: session-review
 description: >-
-  Reflect on the current Claude Code session, identify legitimate learnings worth preserving (project gotchas, user preferences, mis-attributions, reusable workflows), classify each into the right destination (preferring checked-in .claude/rules/, CLAUDE.md, or a new skill over local-only auto-memory), present the proposals via AskUserQuestion, and apply approved changes. Trigger when the user asks to "review this session", "振り返って", "capture learnings", "anything to add to CLAUDE.md?", "何か追加するものは?", "session retrospective", or any other phrasing that asks for post-session reflection on what should be captured.
+  Reflect on the current Claude Code or Codex session, identify legitimate learnings worth preserving (project gotchas, user preferences, mis-attributions, reusable workflows), classify each into the right destination (preferring the host-appropriate checked-in project instructions or a new skill over local-only auto-memory), present the proposals for user approval, and apply approved changes. Trigger when the user asks to "review this session", "振り返って", "capture learnings", "anything to add to CLAUDE.md?", "何か追加するものは?", "session retrospective", or any other phrasing that asks for post-session reflection on what should be captured.
 ---
 
 # Session Review
@@ -9,6 +9,19 @@ description: >-
 Look back over the current conversation, surface the *legitimate* learnings that survive into future sessions, classify each into the destination where it belongs, ask the user which to apply, and write the files.
 
 The single most important property of this skill is **honest filtering**. A bad retrospective floods rules files with one-off context and ephemeral plans; a good one keeps the corpus thin and high-signal. **Empty is a valid result** — if the session was routine, say so and add nothing.
+
+## Claude Code / Codex runtime
+
+Use the same filtering and approval workflow on both hosts. In Claude Code, `AskUserQuestion`, `Read`, `Edit`, and `Write` refer to the corresponding tools. In Codex, use the available question, file, and shell tools; if a question tool is unavailable, ask in chat and wait for an explicit answer. Do not apply a proposal before that answer.
+
+Before classifying candidates, read the applicable project instructions and resolve imports such as `CLAUDE.md` containing `@AGENTS.md`. Follow the repository's existing ownership of shared instructions rather than duplicating rules.
+
+| Host | Project facts and process rules | Reusable workflows | Personal memory |
+|---|---|---|---|
+| Claude Code | Existing `CLAUDE.md` / `.claude/rules/`; when `CLAUDE.md` imports `AGENTS.md`, edit the shared file for shared guidance | Existing `.claude/skills/<name>/SKILL.md` convention | Claude auto-memory, only for personal context with no checked-in home |
+| Codex | Applicable `AGENTS.md`; long topic-specific guidance can live in a checked-in document explicitly referenced from `AGENTS.md` | `.agents/skills/<name>/SKILL.md` | Only use a memory capability actually provided by the host; otherwise propose a checked-in destination or skip the candidate |
+
+The classification table and examples below describe Claude Code destinations. In Codex, substitute the destinations in this table throughout classification, proposal text, and application. Never save Codex-only guidance to `.claude/rules/` or `~/.claude/projects/`. Do not invent an automatic memory directory or modify user-global instructions without the user's approval. An explicit request to capture a learning in a particular file takes precedence.
 
 ## Workflow
 
@@ -28,7 +41,7 @@ For each candidate, draft a one-sentence summary in your head and ask: *Would fu
 
 Match each candidate to exactly one destination.
 
-**Prefer checked-in destinations by default.** `CLAUDE.md` / `.claude/rules/` / a skill all live in the repo, so they sync via git to every machine and every contributor. Auto-memory lives under `~/.claude/projects/<encoded-path>/memory/` — it is **local to this one machine and never checked in**, so a learning saved there is invisible after a fresh `clone`, on a second machine, or to teammates. Reach for auto-memory only when a candidate has *no* home in the repo **and** is personal / non-shared cross-session context (e.g. `user` attributes, the volatile `project` progress state). When a candidate could plausibly go to either a checked-in file or auto-memory, the checked-in file wins.
+**Prefer checked-in destinations by default.** Use the host-specific table above. In Claude Code, `CLAUDE.md` / `.claude/rules/` / a skill all live in the repo, so they sync via git to every machine and every contributor. Auto-memory lives under `~/.claude/projects/<encoded-path>/memory/` — it is **local to this one machine and never checked in**, so a learning saved there is invisible after a fresh `clone`, on a second machine, or to teammates. Reach for auto-memory only when a candidate has *no* home in the repo **and** is personal / non-shared cross-session context (e.g. `user` attributes, the volatile `project` progress state). When a candidate could plausibly go to either a checked-in file or auto-memory, the checked-in file wins.
 
 | Destination | What belongs here |
 |---|---|
@@ -58,7 +71,7 @@ After classification, re-examine the list and remove anything that fails *any* o
 
 If filtering leaves zero candidates, tell the user honestly: "Nothing this session generated is worth capturing." Don't pad.
 
-### 4. Present via AskUserQuestion
+### 4. Present for user approval
 
 Two equally valid shapes:
 
@@ -68,13 +81,13 @@ Two equally valid shapes:
 
 Either way, phrase each candidate so the user can decide without re-reading the session. Bad: "Save the feedback about the thing." Good: "Save to `.claude/rules/styling.md`: 'Tailwind v4 requires explicit `cursor-pointer` rule for buttons.'"
 
-With ≥4 candidates, group them by destination across multiple questions in one `AskUserQuestion` call (max 4 questions per call).
+With ≥4 candidates, group them by destination. In Claude Code use multiple questions in one `AskUserQuestion` call (max 4 questions per call); in Codex respect the available question tool's limits or ask in chat.
 
 ### 5. Apply approved changes
 
 For each approved candidate:
 
-- **`CLAUDE.md` / `.claude/rules/*`**: use `Edit` to append to the right section, or `Write` for a new rule file. Follow the surrounding file's bullet and heading conventions and the repository's line-wrapping rule; if it has none, don't hard-wrap paragraphs.
+- **Project instructions (`AGENTS.md` or the Claude destinations above)**: use `Edit` to append to the right section, or `Write` for a new rule file. Follow the surrounding file's bullet and heading conventions and the repository's line-wrapping rule; if it has none, don't hard-wrap paragraphs.
 - **Auto-memory**: write a new file in the project's memory directory using the frontmatter format from the system prompt (`name`, `description`, `metadata.type`). **Always append a one-line entry to `MEMORY.md`** — orphaned memory files are invisible.
 - **New skill / command**: invoke `skill-creator` (or the `skill-creator:skill-creator` Skill). Don't try to hand-author a full SKILL.md from scratch — the creator knows the conventions, eval loop, and description-optimization steps.
 
@@ -96,7 +109,7 @@ End with a brief summary: which destinations got updated, the file paths, and (i
 ```
 User: 今回のセッション振り返って、何か追加するものある？
 
-Claude (this skill):
+Claude Code example (in Codex substitute the destinations and tools above):
 1. Scans session → finds 4 candidates
 2. Filters → 2 survive (Tailwind v4 button gotcha → CLAUDE.md; rule-citation-accuracy → auto-memory)
 3. AskUserQuestion (multiSelect) with both proposals
