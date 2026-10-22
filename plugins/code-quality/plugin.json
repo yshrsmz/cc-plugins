@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "code-quality",
+  "version": "1.0.0",
+  "description": "Behavior-preserving code simplification through reuse, quality, and efficiency review",
+  "author": {
+    "name": "yshrsmz"
+  },
+  "license": "Apache-2.0",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "code-quality",
+        "shortDescription": "Simplify changed code",
+        "developerName": "yshrsmz",
+        "category": "Productivity",
+        "capabilities": []
+      }
+    }
+  }
+}

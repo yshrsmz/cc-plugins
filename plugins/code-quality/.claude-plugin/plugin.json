@@ -1,0 +1,8 @@
+{
+  "name": "code-quality",
+  "version": "1.0.0",
+  "description": "Behavior-preserving code simplification through reuse, quality, and efficiency review",
+  "author": {
+    "name": "yshrsmz"
+  }
+}

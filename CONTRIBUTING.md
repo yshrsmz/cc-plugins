@@ -143,7 +143,7 @@ python3 -m unittest discover -s tests -v
 
 These check catalog inventory, local sources, synchronized manifests, manual invocation policies, package containment, and relative Markdown links. They enforce repository conventions, not complete upstream JSON/YAML schemas.
 
-With Claude Code installed, validate its catalog and each changed plugin. On CLI 2.1.306 this command checks manifests; passing an individual `SKILL.md` is not supported. The optional native-host regression tests use Codex app-server to parse all 13 skills from a separate copy of the plugin packages, without model calls, marketplace registration, or user configuration changes. If either CLI is missing, its integration tests are skipped.
+With Claude Code installed, validate its catalog and each changed plugin. On CLI 2.1.306 this command checks manifests; passing an individual `SKILL.md` is not supported. The optional native-host regression tests use Codex app-server to parse all 14 skills from a separate copy of the plugin packages, without model calls, marketplace registration, or user configuration changes. If either CLI is missing, its integration tests are skipped.
 
 ```bash
 claude plugin validate .claude-plugin/marketplace.json

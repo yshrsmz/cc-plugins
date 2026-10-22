@@ -29,7 +29,7 @@ class PluginValidationTests(unittest.TestCase):
         path.write_text(json.dumps(value))
 
     def test_repository_packages_are_consistent(self):
-        self.assertEqual(validate_repository(self.root), (4, 13))
+        self.assertEqual(validate_repository(self.root), (5, 14))
 
     def test_catalog_cannot_silently_omit_plugin(self):
         self.change_json(".agents/plugins/marketplace.json", lambda data: data["plugins"].pop())
@@ -51,6 +51,24 @@ class PluginValidationTests(unittest.TestCase):
         (self.root / "plugins/github/skills/pr-review/agents/openai.yaml").unlink()
         with self.assertRaisesRegex(ValidationError, "manual invocation policy"):
             validate_repository(self.root)
+
+    def test_simplify_requires_matching_manual_invocation_policy(self):
+        policy = self.root / "plugins/code-quality/skills/simplify/agents/openai.yaml"
+        policy.write_text("policy:\n  allow_implicit_invocation: true\n")
+        with self.assertRaisesRegex(ValidationError, "manual invocation policy"):
+            validate_repository(self.root)
+
+    def test_simplify_reviewers_must_ship_inside_package(self):
+        for reviewer in ("reuse", "quality", "efficiency"):
+            path = self.root / f"plugins/code-quality/agents/simplify-{reviewer}.md"
+            with self.subTest(reviewer=reviewer):
+                content = path.read_text()
+                path.unlink()
+                try:
+                    with self.assertRaisesRegex(ValidationError, "broken local link"):
+                        validate_repository(self.root)
+                finally:
+                    path.write_text(content)
 
     def test_shared_template_must_ship_inside_package(self):
         (self.root / "plugins/android/skills/templates/review-base.md").unlink()
