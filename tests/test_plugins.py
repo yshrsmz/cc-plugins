@@ -29,7 +29,7 @@ class PluginValidationTests(unittest.TestCase):
         path.write_text(json.dumps(value))
 
     def test_repository_packages_are_consistent(self):
-        self.assertEqual(validate_repository(self.root), (5, 14))
+        self.assertEqual(validate_repository(self.root), (5, 15))
 
     def test_catalog_cannot_silently_omit_plugin(self):
         self.change_json(".agents/plugins/marketplace.json", lambda data: data["plugins"].pop())
@@ -69,6 +69,16 @@ class PluginValidationTests(unittest.TestCase):
                         validate_repository(self.root)
                 finally:
                     path.write_text(content)
+
+    def test_prune_tests_requires_matching_manual_invocation_policy(self):
+        (self.root / "plugins/code-quality/skills/prune-tests/agents/openai.yaml").unlink()
+        with self.assertRaisesRegex(ValidationError, "manual invocation policy"):
+            validate_repository(self.root)
+
+    def test_prune_tests_auditor_must_ship_inside_package(self):
+        (self.root / "plugins/code-quality/agents/prune-tests-auditor.md").unlink()
+        with self.assertRaisesRegex(ValidationError, "broken local link"):
+            validate_repository(self.root)
 
     def test_shared_template_must_ship_inside_package(self):
         (self.root / "plugins/android/skills/templates/review-base.md").unlink()

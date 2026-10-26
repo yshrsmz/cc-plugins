@@ -150,11 +150,12 @@ Android development best practices, code generation, and debugging assistance.
 
 ### code-quality
 
-Language-independent code simplification for Claude Code and Codex.
+Language-independent code simplification and test suite pruning for Claude Code and Codex.
 
 **Skills:**
 
 - `/simplify` - 明示起動限定。ベースブランチとの差分全体と未コミット変更を再利用・品質・効率の3観点でレビューし、振る舞いを維持して修正・検証する。委譲機能がなければ逐次レビューする
+- `/prune-tests` - 明示起動限定。コードベース内の全テストを精査し、削除・統合できるテストを「削除すると見逃す現実的な不具合」と実行時間・不安定さ・修正負担の比較に基づいてリストアップする。テストは編集しない
 
 詳細は [code-quality README](plugins/code-quality/README.md) を参照してください。
 

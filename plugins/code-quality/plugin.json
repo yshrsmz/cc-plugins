@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "code-quality",
-  "version": "1.0.0",
-  "description": "Behavior-preserving code simplification through reuse, quality, and efficiency review",
+  "version": "1.1.0",
+  "description": "Behavior-preserving code simplification and test suite pruning audits",
   "author": {
     "name": "yshrsmz"
   },
@@ -11,7 +11,7 @@
     "com.openai": {
       "interface": {
         "displayName": "code-quality",
-        "shortDescription": "Simplify changed code",
+        "shortDescription": "Simplify code and prune tests",
         "developerName": "yshrsmz",
         "category": "Productivity",
         "capabilities": []

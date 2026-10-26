@@ -118,7 +118,7 @@ class NativeHostTests(unittest.TestCase):
                                 self.assertTrue(Path(skill["path"]).is_relative_to(root))
                                 self.assertTrue(Path(skill["path"]).is_file())
                             total += len(expected)
-                    self.assertEqual(total, 14)
+                    self.assertEqual(total, 15)
                 finally:
                     process.terminate()
                     try:
