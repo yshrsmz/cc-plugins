@@ -63,5 +63,6 @@ claude --plugin-dir ./plugins/<plugin-name>
 - 新規プラグインは両マーケットプレースに登録する。手動起動限定のスキルは Claude の `disable-model-invocation: true` と Codex の `agents/openai.yaml` の `policy.allow_implicit_invocation: false` を揃える。
 - `agents/*.md` の Claude 向け frontmatter を Codex のカスタムエージェント登録と見なさない。Codex ではスキルが定義本文を読み、汎用サブエージェントへ渡す。
 - `.claude/rules/yaml-frontmatter.md` と `.claude/rules/skill-validation.md` を読み、frontmatter とスキル品質の規約に従う。スキルの簡素化やレビュー観点の削除には改変前後の比較評価が必要。
+- ユーザーへの質問は `.claude/rules/ask-user-question.md` に従い、本文に書かずに質問ツールで行う。
 - Git 操作には `plugins/github/skills/git-operations/SKILL.md` の規約に従う。
 - Markdown は段落をハードラップしない。
