@@ -33,9 +33,11 @@ Re-read the conversation with these lenses:
 - **Mis-attributions / mistakes**: places where you cited the wrong source, asserted something the user proved false, or made a wrong assumption that wasted time.
 - **Project gotchas**: non-obvious behaviors of the codebase, build tooling, framework, or runtime that surfaced during the work. Things a future contributor would benefit from knowing.
 - **User preferences**: workflow choices, style preferences, terminology, decision patterns the user demonstrated.
-- **Reusable workflows**: multi-step processes you executed that generalize beyond this one session.
+- **Reusable workflows**: multi-step processes you executed that generalize beyond this one session. Concrete triggers: you assembled a procedure of three or more steps, you wrote scripts or templates to a place that will disappear (scratchpad, `/tmp`), or the same kind of task is likely to come back.
 
-For each candidate, draft a one-sentence summary in your head and ask: *Would future-me, dropped into a fresh conversation, change their behavior because of this?* If no, drop it.
+For each candidate, draft a one-sentence summary in your head and ask: *Would future-me, dropped into a fresh conversation, change their behavior because of this?* For a workflow, also ask: *Would having it packaged make the next run of this kind of task substantially shorter?* If both answers are no, drop it.
+
+Before condensing a lesson into a rule or memory, check whether the procedure that produced it is itself a skill candidate. A lesson like "cross-check against the billing API" is often one step of a workflow worth keeping whole; propose the workflow as a skill and keep the lesson inside it, rather than saving only the lesson.
 
 ### 2. Classify each surviving candidate
 
@@ -47,7 +49,7 @@ Match each candidate to exactly one destination.
 |---|---|
 | **`.claude/rules/<topic>.md`** (checked in — first choice for process) | Process conventions (project-specific or general): how to write tests in this repo, when to ask the user, comment style, git/PR rules, how work should be conducted. Each rule file is one topic. |
 | **`CLAUDE.md`** (project root, checked in — first choice for codebase facts) | Non-obvious codebase facts: build/runtime quirks, framework version gotchas, file-layout invariants, generated files and what regenerates them, etc. Usually goes under existing sections like "Notes for editing". |
-| **New skill / command** (checked in — first choice for reusable workflows) | A reusable, generalizable multi-step workflow that emerged. Rare — most sessions don't yield one. If yes, recommend invoking the `skill-creator` skill rather than hand-authoring a SKILL.md. |
+| **New skill / command** (checked in — first choice for reusable workflows) | A reusable, generalizable multi-step workflow that emerged. The bar is high: it must generalize beyond this session and save real work next time. If yes, recommend invoking the `skill-creator` skill rather than hand-authoring a SKILL.md. |
 | **Auto-memory** (`~/.claude/projects/<encoded-path>/memory/`) — **local-only, not synced; last resort** | Cross-session context with no repo home that is fine to keep personal: `user` (who they are), `project` (volatile current progress), `reference` (external systems). `feedback` about *how to work in this project* is really a process convention — prefer `.claude/rules/` and only fall back here if it's genuinely personal. Always update `MEMORY.md` index. |
 
 If a candidate doesn't match cleanly to one destination, that's a signal it isn't well-formed enough — go back and either sharpen it or drop it.
@@ -66,8 +68,8 @@ After classification, re-examine the list and remove anything that fails *any* o
 
 - The candidate would be visible to a careful reader of the existing code/docs.
 - The destination already contains a substantively-equivalent entry.
-- The candidate is a hypothesis about a future scenario with no current trigger ("if someone ever adds a dark mode…"). YAGNI applies to rules just as much as to code.
-- The candidate restates the literal task that just completed — those belong in PR descriptions and commit messages, not memory.
+- The candidate is a hypothesis about a future scenario with no current trigger ("if someone ever adds a dark mode…"). YAGNI applies to rules just as much as to code. A workflow you actually ran this session is a current trigger, not a hypothesis.
+- The candidate restates the literal task that just completed — those belong in PR descriptions and commit messages, not memory. This does not cover the *procedure* behind the task: a workflow that would apply to the next task of the same kind is a skill candidate even if it ran only once.
 
 If filtering leaves zero candidates, tell the user honestly: "Nothing this session generated is worth capturing." Don't pad.
 
