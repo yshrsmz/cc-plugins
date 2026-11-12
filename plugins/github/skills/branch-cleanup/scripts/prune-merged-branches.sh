@@ -10,8 +10,11 @@
 #   差分を出すので判定に使えない。マージされたかどうかを知っているのは GitHub 側だけ。
 #   このスクリプトはマージ済み PR の head SHA とローカルの先端 SHA を照合して判定する。
 #
-# 既定で削除まで行う。消すのは「マージ済み PR の head SHA と一致するブランチ」だけで、
-# 一致しないもの・PR が見つからないものは必ず残して理由を報告する。何が消えるかを
+# 既定で削除まで行う。消すのは次のどちらかに当たるブランチだけ。
+#   - マージ済み PR の head SHA と先端が一致する
+#   - コミットがすべてリモートにあり、worktree に未コミットの変更が無く、open な PR も無い
+#     （マージ済みと確定できなくても、消して失うものが無い）
+# それ以外は残し、理由と「消したら失うものの量」を、少ない順に報告する。何が消えるかを
 # 先に見たいときは --dry-run。
 #
 # worktree について:
@@ -33,9 +36,10 @@ usage() {
 
   bash prune-merged-branches.sh [--dry-run] [--keep-worktrees]
 
-消すのは「マージ済み PR の head SHA と先端が一致するブランチ」だけ。一致しないもの・
-PR が見つからないものは必ず残して理由を報告する。既定ブランチと現在のブランチ、
-現在いる worktree、メインの worktree、リモートのブランチには触らない。
+消すのは「マージ済み PR の head SHA と先端が一致するブランチ」と、「コミットがすべて
+リモートにあり、worktree に未コミットの変更も open な PR も無いブランチ」だけ。それ以外は
+残し、理由と消したら失うものの量を報告する。既定ブランチと現在のブランチ、現在いる
+worktree、メインの worktree、リモートのブランチには触らない。
 
   --dry-run          何も消さずに、消える対象の一覧だけ出す
   --keep-worktrees   worktree を消さない。worktree にチェックアウトされている
@@ -154,15 +158,70 @@ ignored_entries_in() {
   fi
 }
 
-# `git worktree remove` が拒否する状態か。判定条件は remove と同じ「tracked の変更または
-# untracked ファイル」で、`git status --porcelain` は ignore 済みを出さないので一致する。
-# --dry-run がこれを見ないと、実行時に必ず残るものを削除対象として予告してしまう。
-worktree_is_dirty() {
-  [ -n "$( cd "$1" 2>/dev/null && git status --porcelain )" ]
+# 未コミットの変更（tracked の変更と untracked ファイル）の件数。1 以上なら
+# `git worktree remove` が拒否する。判定条件は remove と同じで、`git status --porcelain` は
+# ignore 済みを出さないので一致する。--dry-run がこれを見ないと、実行時に必ず残るものを
+# 削除対象として予告してしまう。
+worktree_dirty_count() {
+  ( cd "$1" 2>/dev/null && git status --porcelain ) | wc -l | tr -d ' '
+}
+
+# リモートのどのブランチからも辿れないコミットの数。0 ならブランチを消してもコミットは失われない。
+unpushed_count() {
+  git rev-list --count "$1" --not --remotes 2>/dev/null || echo "?"
 }
 
 deleted=""
+# 残したブランチは「失うものの量<TAB>行」で貯め、最後に少ない順に並べる。
+# 失うものが少ないものから判断できるようにするため。
 kept=""
+
+# 残す理由を 1 行足す。第 1 引数は並べ替えの重み（失うものの量）。
+keep() {
+  kept="${kept}$1"$'\t'"  $2"$'\n'
+}
+
+# 残す理由に、消したら失うものの量を添える。
+loss_note() {
+  local unpushed="$1" dirty="$2"
+  if [ "$dirty" = "-" ]; then
+    printf '（リモートに無いコミット %s 件）' "$unpushed"
+  else
+    printf '（リモートに無いコミット %s 件 / 未コミットの変更 %s 件）' "$unpushed" "$dirty"
+  fi
+}
+
+# ブランチと、それをチェックアウトしている worktree を消す。消したら deleted に、
+# 消せなかったら kept に足す。第 3 引数は削除の理由（報告に添える。空でもよい）。
+remove_branch() {
+  local branch="$1" ref="$2" why="$3" local_oid wt_path wt_note="" ignored wt_error
+  local_oid="$(git rev-parse "$ref")"
+  wt_path="$(worktree_path_for "$ref")"
+
+  if [ -n "$wt_path" ]; then
+    # 消えてしまう ignore 済みエントリは、消す前に控える。remove 後には読めない。
+    ignored="$(ignored_entries_in "$wt_path")"
+    wt_note=" + worktree $wt_path"
+    if [ -n "$ignored" ]; then
+      wt_note="${wt_note}（ignore 済みも消える: ${ignored}）"
+    fi
+
+    if [ "$dry_run" -eq 0 ]; then
+      # --force は付けない。事前判定を潜り抜けた状態（判定と remove の間に
+      # ファイルが増えた等）でも、git が拒否してブランチを道連れにせず止まる。
+      if ! wt_error="$(git worktree remove "$wt_path" 2>&1)"; then
+        keep 0 "$branch — worktree を消せなかった（${wt_path}）: $wt_error"
+        return
+      fi
+    fi
+  fi
+
+  if [ "$dry_run" -eq 1 ] || git branch -D "$branch" >/dev/null 2>&1; then
+    deleted="${deleted}  $branch (${local_oid:0:7})${why}${wt_note}"$'\n'
+  else
+    keep 0 "$branch — 削除できなかった（別の worktree で使われている可能性）"
+  fi
+}
 
 # ブランチ名に空白は入らないので、そのまま単語分割してよい。while read だと
 # ループの中の git / gh がループ自身の stdin を食う。
@@ -180,6 +239,23 @@ for ref in $(git for-each-ref --format='%(refname)' refs/heads/); do
   # 優先され（`git rev-parse` は tag を先に解決する）、実在しない不一致を報告する。
   local_oid="$(git rev-parse "$ref")"
 
+  # 消せない場所の worktree は、マージ済みかどうかに関わらず先に除く。
+  wt_path="$(worktree_path_for "$ref")"
+  if [ -n "$wt_path" ]; then
+    if [ "$wt_path" = "$main_worktree" ]; then
+      keep 0 "$branch — メインの worktree でチェックアウト中（${wt_path}）"
+      continue
+    fi
+    if [ "$wt_path" = "$current_worktree" ]; then
+      keep 0 "$branch — いま自分がいる worktree（${wt_path}）"
+      continue
+    fi
+    if [ "$keep_worktrees" -eq 1 ]; then
+      keep 0 "$branch — worktree でチェックアウト中（$wt_path / --keep-worktrees 指定）"
+      continue
+    fi
+  fi
+
   # そのブランチを head とするマージ済み PR をすべて挙げ、ローカルの先端がその中に
   # あるかを見る。ブランチ名は使い回されることがあるので、最新の 1 件だけ見ない。
   #
@@ -189,77 +265,57 @@ for ref in $(git for-each-ref --format='%(refname)' refs/heads/); do
         --json headRefOid --jq '.[].headRefOid' 2>/dev/null)"; then
     # 空の結果と失敗を混同しない。混同すると、認証切れやリポジトリ解決の失敗が
     # 「PR が見つからない（= push していない作業ブランチ）」と報告される。
-    kept="${kept}  $branch — gh の照会に失敗した（マージ済みか判定できていない）"$'\n'
+    keep 0 "$branch — gh の照会に失敗した（マージ済みか判定できていない）"
     continue
   fi
+
+  dirty="-"
+  if [ -n "$wt_path" ]; then
+    dirty="$(worktree_dirty_count "$wt_path")"
+  fi
+
+  if [ -n "$merged_oids" ] && printf '%s\n' "$merged_oids" | grep -qx "$local_oid"; then
+    # マージ済みが確定。worktree が git に拒否される状態なら、--dry-run でも
+    # 削除対象として予告しない。
+    if [ "$dirty" != "-" ] && [ "$dirty" -gt 0 ]; then
+      keep "$dirty" "$branch — worktree に変更が残っている（${wt_path}）$(loss_note 0 "$dirty")"
+      continue
+    fi
+    remove_branch "$branch" "$ref" ""
+    continue
+  fi
+
+  # マージ済みと確定できないブランチでも、コミットがすべてリモートにあり、worktree に
+  # 未コミットの変更も無ければ、消して失うものは無い。サブエージェント用の worktree や、
+  # PR を手元で見るために作ったブランチは、ほとんどがこれに当たる。
+  unpushed="$(unpushed_count "$ref")"
+  if [ "$unpushed" = "0" ] && { [ "$dirty" = "-" ] || [ "$dirty" -eq 0 ]; }; then
+    # open な PR のブランチは、失うものが無くても作業中なので消さない。
+    if ! open_count="$(gh pr list --head "$branch" --state open --limit 1 \
+          --json number --jq 'length' 2>/dev/null)"; then
+      keep 0 "$branch — gh の照会に失敗した（open な PR があるか判定できていない）"
+      continue
+    fi
+    if [ "$open_count" != "0" ]; then
+      keep 0 "$branch — open な PR がある"
+      continue
+    fi
+    remove_branch "$branch" "$ref" "（マージ済みと確定できないが、コミットはすべてリモートにある）"
+    continue
+  fi
+
+  weight=$(( ${unpushed//\?/1} + ${dirty//-/0} ))
+  note="$(loss_note "$unpushed" "$dirty")"
 
   if [ -z "$merged_oids" ]; then
-    kept="${kept}  $branch — マージ済み PR が見つからない"$'\n'
+    keep "$weight" "$branch — マージ済み PR が見つからない${note}"
     continue
   fi
 
-  if ! printf '%s\n' "$merged_oids" | grep -qx "$local_oid"; then
-    # PR の head SHA も出す。上位がブランチの中身を見るとき、この SHA を起点にしないと
-    # squash merge では「ブランチの全履歴が未マージ」に見える。
-    pr_oid="$(printf '%s\n' "$merged_oids" | head -1)"
-    kept="${kept}  $branch — マージ済み PR はあるが先端 SHA が一致しない（ローカル ${local_oid:0:7} / PR head ${pr_oid:0:7}）"$'\n'
-    continue
-  fi
-
-  # ここから先はマージ済みが確定している。worktree にチェックアウトされていれば、
-  # それを先に外さない限り `git branch -D` は必ず失敗する。
-  wt_path="$(worktree_path_for "$ref")"
-  wt_note=""
-
-  if [ -n "$wt_path" ]; then
-    if [ "$wt_path" = "$main_worktree" ]; then
-      kept="${kept}  $branch — メインの worktree でチェックアウト中（${wt_path}）"$'\n'
-      continue
-    fi
-
-    if [ "$wt_path" = "$current_worktree" ]; then
-      kept="${kept}  $branch — いま自分がいる worktree（${wt_path}）"$'\n'
-      continue
-    fi
-
-    if [ "$keep_worktrees" -eq 1 ]; then
-      kept="${kept}  $branch — worktree でチェックアウト中（$wt_path / --keep-worktrees 指定）"$'\n'
-      continue
-    fi
-
-    # 実行時に git が拒否する状態なら、--dry-run でも削除対象として予告しない。
-    if worktree_is_dirty "$wt_path"; then
-      kept="${kept}  $branch — worktree に変更が残っている（${wt_path}）"$'\n'
-      continue
-    fi
-
-    # 消えてしまう ignore 済みエントリは、消す前に控える。remove 後には読めない。
-    ignored="$(ignored_entries_in "$wt_path")"
-    wt_note=" + worktree $wt_path"
-    if [ -n "$ignored" ]; then
-      wt_note="${wt_note}（ignore 済みも消える: ${ignored}）"
-    fi
-
-    if [ "$dry_run" -eq 0 ]; then
-      # --force は付けない。上の事前判定を潜り抜けた状態（判定と remove の間に
-      # ファイルが増えた等）でも、git が拒否してブランチを道連れにせず止まる。
-      if ! wt_error="$(git worktree remove "$wt_path" 2>&1)"; then
-        kept="${kept}  $branch — worktree を消せなかった（${wt_path}）: $wt_error"$'\n'
-        continue
-      fi
-    fi
-  fi
-
-  if [ "$dry_run" -eq 1 ]; then
-    deleted="${deleted}  $branch (${local_oid:0:7})${wt_note}"$'\n'
-    continue
-  fi
-
-  if git branch -D "$branch" >/dev/null 2>&1; then
-    deleted="${deleted}  $branch (${local_oid:0:7})${wt_note}"$'\n'
-  else
-    kept="${kept}  $branch — 削除できなかった（別の worktree で使われている可能性）"$'\n'
-  fi
+  # PR の head SHA も出す。上位がブランチの中身を見るとき、この SHA を起点にしないと
+  # squash merge では「ブランチの全履歴が未マージ」に見える。
+  pr_oid="$(printf '%s\n' "$merged_oids" | head -1)"
+  keep "$weight" "$branch — マージ済み PR はあるが先端 SHA が一致しない（ローカル ${local_oid:0:7} / PR head ${pr_oid:0:7}）${note}"
 done
 
 if [ "$dry_run" -eq 1 ]; then
@@ -271,5 +327,9 @@ else
 fi
 if [ -n "$deleted" ]; then printf '%s' "$deleted"; else echo "  (なし)"; fi
 
-echo "=== 残した ==="
-if [ -n "$kept" ]; then printf '%s' "$kept"; else echo "  (なし)"; fi
+echo "=== 残した（消したら失うものが少ない順） ==="
+if [ -n "$kept" ]; then
+  printf '%s' "$kept" | sort -t $'\t' -k1,1n -s | cut -f2-
+else
+  echo "  (なし)"
+fi
