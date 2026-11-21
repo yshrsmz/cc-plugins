@@ -9,9 +9,11 @@
 #   `git branch --merged` にも出ない。`git diff main <branch>` も、main が先に進んでいれば
 #   差分を出すので判定に使えない。マージされたかどうかを知っているのは GitHub 側だけ。
 #   このスクリプトはマージ済み PR の head SHA とローカルの先端 SHA を照合して判定する。
+#   PR はブランチ名で引き、見つからなければ先端 SHA を head に持つ PR を引く（ローカルと
+#   別の名前で push したブランチを拾うため）。
 #
 # 既定で削除まで行う。消すのは次のどちらかに当たるブランチだけ。
-#   - マージ済み PR の head SHA と先端が一致する
+#   - マージ済み PR の head SHA と先端が一致する（PR のブランチ名がローカルと違ってもよい）
 #   - コミットがすべてリモートにあり、worktree に未コミットの変更が無く、open な PR も無い
 #     （マージ済みと確定できなくても、消して失うものが無い）
 # それ以外は残し、理由と「消したら失うものの量」を、少ない順に報告する。何が消えるかを
@@ -36,7 +38,8 @@ usage() {
 
   bash prune-merged-branches.sh [--dry-run] [--keep-worktrees]
 
-消すのは「マージ済み PR の head SHA と先端が一致するブランチ」と、「コミットがすべて
+消すのは「マージ済み PR の head SHA と先端が一致するブランチ」（PR のブランチ名が
+ローカルと違ってもよい）と、「コミットがすべて
 リモートにあり、worktree に未コミットの変更も open な PR も無いブランチ」だけ。それ以外は
 残し、理由と消したら失うものの量を報告する。既定ブランチと現在のブランチ、現在いる
 worktree、メインの worktree、リモートのブランチには触らない。
@@ -171,6 +174,27 @@ unpushed_count() {
   git rev-list --count "$1" --not --remotes 2>/dev/null || echo "?"
 }
 
+# SHA をそのまま head に持つマージ済み PR の番号を出す（無ければ何も出さない）。
+# 照会に失敗したら 1 を返す。
+#
+# この API が返すのは「その commit に関連する PR」で、squash merge の merge commit や
+# PR 途中のコミットでも PR が返る。head.sha が一致するものだけを数える。fork からの
+# PR も base のリポジトリから引ける。
+merged_pr_with_head() {
+  local oid="$1" out
+  if out="$(gh api "repos/{owner}/{repo}/commits/${oid}/pulls?per_page=100" \
+        --jq ".[] | select(.merged_at != null and .head.sha == \"${oid}\") | .number" 2>/dev/null)"; then
+    printf '%s\n' "$out" | head -1
+    return 0
+  fi
+  # GitHub が知らないコミット（一度も push していない）は 422 になる。PR が無いのと同じ。
+  # 失敗時の stdout にはエラーの本文が出る（--jq は適用されない）。
+  case "$out" in
+    *"No commit found for SHA"*) return 0 ;;
+  esac
+  return 1
+}
+
 deleted=""
 # 残したブランチは「失うものの量<TAB>行」で貯め、最後に少ない順に並べる。
 # 失うものが少ないものから判断できるようにするため。
@@ -274,14 +298,33 @@ for ref in $(git for-each-ref --format='%(refname)' refs/heads/); do
     dirty="$(worktree_dirty_count "$wt_path")"
   fi
 
+  merged=0
+  merged_why=""
   if [ -n "$merged_oids" ] && printf '%s\n' "$merged_oids" | grep -qx "$local_oid"; then
+    merged=1
+  else
+    # ブランチ名で見つからなくても、先端をそのまま head に持つマージ済み PR があれば
+    # マージ済み。ローカルとは別の名前で push した（`git push origin foo:bar`）ブランチは
+    # ブランチ名では引けず、マージ後にリモートのブランチも消えるので、下の
+    # 「コミットはすべてリモートにある」にも当たらない。
+    if ! sha_pr="$(merged_pr_with_head "$local_oid")"; then
+      keep 0 "$branch — gh の照会に失敗した（マージ済みか判定できていない）"
+      continue
+    fi
+    if [ -n "$sha_pr" ]; then
+      merged=1
+      merged_why="（PR #${sha_pr} の head と一致。PR のブランチ名はローカルと異なる）"
+    fi
+  fi
+
+  if [ "$merged" -eq 1 ]; then
     # マージ済みが確定。worktree が git に拒否される状態なら、--dry-run でも
     # 削除対象として予告しない。
     if [ "$dirty" != "-" ] && [ "$dirty" -gt 0 ]; then
       keep "$dirty" "$branch — worktree に変更が残っている（${wt_path}）$(loss_note 0 "$dirty")"
       continue
     fi
-    remove_branch "$branch" "$ref" ""
+    remove_branch "$branch" "$ref" "$merged_why"
     continue
   fi
 

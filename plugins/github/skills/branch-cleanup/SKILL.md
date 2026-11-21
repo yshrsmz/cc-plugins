@@ -20,6 +20,8 @@ squash merge されたブランチは、git だけでは「マージ済み」と
 
 マージされたかどうかを知っているのは GitHub 側だけなので、**マージ済み PR の head SHA とローカルブランチの先端 SHA を照合する**。この照合を毎回手で組み直さないためのスクリプトが同梱してある。
 
+PR はまずブランチ名（`gh pr list --head <branch>`）で探す。見つからなければ、先端 SHA を head に持つマージ済み PR を `gh api repos/{owner}/{repo}/commits/<sha>/pulls` で探す。ローカルと別の名前で push した（`git push origin foo:bar`）ブランチはブランチ名では引けず、マージ後にリモートのブランチも消えるので「コミットはすべてリモートにある」にも当たらない。先端 SHA で引けば、これもマージ済みとして消せる。この API は squash merge の merge commit や PR 途中のコミットにも PR を返すので、head SHA が先端と一致する PR だけを数える。fork からの PR も base のリポジトリから引ける。先端 SHA で一致したブランチは、報告に `（PR #N の head と一致。PR のブランチ名はローカルと異なる）` が付く。
+
 ## 失うものが無いブランチも消す
 
 マージ済み PR と照合できないブランチの多くは、消しても何も失わない。サブエージェントが作った作業用 worktree、PR を手元で見るために作ったブランチ、PR がマージされた後に先端だけ動いた（main を取り込んだが push しなかった等）ブランチなどである。これを「マージ済みと確定できない」として全部残すと、何十本も残って 1 本ずつ中身を見る羽目になり、片付けにならない。
@@ -89,7 +91,7 @@ ignore 済みファイル（`.env`、ローカル DB、認証情報）を置く�
 
    スクリプトが残す理由は次のとおりで、対処がそれぞれ違う。
 
-   - `マージ済み PR が見つからない` — push していない作業ブランチか、PR を作る前のブランチ。中身を見せるときは `git log <branch> --not --remotes` で、リモートに無いコミットだけを出す
+   - `マージ済み PR が見つからない` — ブランチ名でも先端 SHA でもマージ済み PR が引けなかった。push していない作業ブランチか、PR を作る前のブランチか、PR がマージされたあとに手元で先端を動かした（コミット追加・rebase）別名 push のブランチ。中身を見せるときは `git log <branch> --not --remotes` で、リモートに無いコミットだけを出す
    - `マージ済み PR はあるが先端 SHA が一致しない` — PR がマージされたあとに先端が動いている（コミット追加・rebase・amend）。中身を見せるときは `git log <PR head SHA>..<branch>` を使う。`<default-branch>..` を起点にしてはいけない。squash merge ではブランチのコミットが 1 つも既定ブランチの祖先にならないので、全履歴が未マージに見えてしまう。SHA はスクリプトの出力に入っている
    - `worktree に変更が残っている` — マージ済みだが、tracked の変更か untracked ファイルがある。中身を見せるときは、その worktree へ `cd` して `git status` を見せる（`git -C` は使わない。`github:git-operations` を参照）。**消すなら `git worktree remove --force` だが、これは自分から提案しない。** ユーザーがその変更を要らないと明言してから使う
    - `open な PR がある` — 失うものは無いが作業中のブランチ。消す対象にしない
@@ -110,10 +112,13 @@ ignore 済みファイル（`.env`、ローカル DB、認証情報）を置く�
 ```bash
 gh pr list --head <branch> --state merged --limit 50 --json headRefOid --jq '.[].headRefOid'
 git rev-parse "refs/heads/<branch>"
+gh api "repos/{owner}/{repo}/commits/<sha>/pulls?per_page=100" --jq '.[] | select(.merged_at != null and .head.sha == "<sha>") | .number'
 git rev-list --count "refs/heads/<branch>" --not --remotes
 ```
 
-マージ済み PR の head と一致するか、リモートに無いコミットが 0 件なら `git branch -D <branch>`。どちらでもなければ、リモートに無いコミットの件数を添えて判断を仰ぐ。
+`<sha>` は `git rev-parse` で得た先端 SHA。3 つ目はブランチ名で PR が引けなかったときに使い、`No commit found for SHA`（HTTP 422）なら GitHub がそのコミットを知らない（push していない）ということで、マージ済み PR は無い。
+
+マージ済み PR の head と一致する（ブランチ名・先端 SHA のどちらで引いた PR でもよい）か、リモートに無いコミットが 0 件なら `git branch -D <branch>`。どちらでもなければ、リモートに無いコミットの件数を添えて判断を仰ぐ。
 
 worktree に載っているブランチなら、先に `git worktree list` でパスを引いて
 `git worktree remove <path>`（`--force` は付けない）を通してから削除する。
@@ -126,7 +131,7 @@ worktree に載っているブランチなら、先に `git worktree list` で�
 - メインの worktree、および実行時に自分がいる worktree
 - 上の「残した」に入るブランチ
 
-削除するのは「マージ済み PR の head SHA と先端が一致するブランチ」と「消して失うものが無いブランチ」だけ。リモートのブランチ自体は消さない（GitHub 側の delete-branch-on-merge に任せる）。ただし最初に `git fetch origin --prune` を走らせるので、消えたリモートの追跡参照は片付く。同様に `git worktree prune` も走らせるが、これはディレクトリが既に無い worktree の管理情報を消すだけで、実在する worktree には触らない。
+削除するのは「マージ済み PR の head SHA と先端が一致するブランチ」（PR のブランチ名がローカルと違ってもよい）と「消して失うものが無いブランチ」だけ。リモートのブランチ自体は消さない（GitHub 側の delete-branch-on-merge に任せる）。ただし最初に `git fetch origin --prune` を走らせるので、消えたリモートの追跡参照は片付く。同様に `git worktree prune` も走らせるが、これはディレクトリが既に無い worktree の管理情報を消すだけで、実在する worktree には触らない。
 
 ## 前提
 
