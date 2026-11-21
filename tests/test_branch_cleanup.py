@@ -16,13 +16,17 @@ SCRIPT = ROOT / "plugins/github/skills/branch-cleanup/scripts/prune-merged-branc
 # スクリプトの --jq と同じく「マージ済みで head.sha が一致する PR の番号」を出す。
 # 登録の無い SHA は実際の API と同じく、エラー本文（422）を stdout に出して失敗する。
 # PR_FIXTURE["api_fail"] に入れた SHA は 422 以外で失敗させる。
+# リポジトリのホストは PR_FIXTURE["host"]（既定は github.com）。`gh repo view --json url` の --jq の
+# 結果としてそのホストを返し、`gh api` は --hostname がそれと違えば実際の gh と同じく 404 で失敗する。
 # auth status と repo view は成功させる。
 FAKE_GH = """#!/usr/bin/env bash
 set -euo pipefail
 case "$1 ${2:-}" in
   "auth status") exit 0 ;;
   "repo view")
-    if [[ " $* " == *" defaultBranchRef "* ]]; then echo main; else echo '{}'; fi
+    if [[ " $* " == *" defaultBranchRef "* ]]; then echo main
+    elif [[ " $* " == *" url "* ]]; then python3 -c 'import json, os; print(json.loads(os.environ["PR_FIXTURE"]).get("host", "github.com"))'
+    else echo '{}'; fi
     exit 0 ;;
   "pr list")
     shift 2
@@ -42,10 +46,15 @@ print(len(oids) if state == "open" else "\\n".join(oids))
 PY
     ;;
   "api repos/{owner}/{repo}/commits/"*)
-    python3 - "$2" <<'PY'
+    python3 - "$@" <<'PY'
 import json, os, re, sys
-oid = re.match(r"repos/\\{owner\\}/\\{repo\\}/commits/([0-9a-f]+)/pulls", sys.argv[1]).group(1)
+args = sys.argv[1:]
+oid = re.match(r"repos/\\{owner\\}/\\{repo\\}/commits/([0-9a-f]+)/pulls", args[1]).group(1)
 fixture = json.loads(os.environ["PR_FIXTURE"])
+hostname = args[args.index("--hostname") + 1] if "--hostname" in args else "github.com"
+if hostname != fixture.get("host", "github.com"):
+    print('{"message":"Not Found","status":"404"}')
+    sys.exit(1)
 if oid in fixture.get("api_fail", []):
     print('{"message":"Server Error","status":"500"}')
     sys.exit(1)
@@ -188,6 +197,18 @@ class BranchCleanupTests(unittest.TestCase):
         self.assertIn(f"alias ({alias_oid[:7]})（PR #12 の head と一致。PR のブランチ名はローカルと異なる）", deleted)
         self.assertIn("alias-dirty-wt — worktree に変更が残っている", kept)
         self.assertIn("moved — マージ済み PR が見つからない（リモートに無いコミット 2 件）", kept)
+
+    def test_looks_up_head_sha_on_the_remote_host(self):
+        # GitHub Enterprise のリポジトリ。`gh api` にホストを渡さないと github.com に
+        # 問い合わせて 404 になり、照会失敗として残る。
+        self.branch("alias", commits=1)
+        alias_oid = git(self.repo, "rev-parse", "alias")
+        merged_pr = {"number": 12, "merged_at": "2026-01-01T00:00:00Z", "head": {"sha": alias_oid}}
+
+        out = self.run_script({"host": "tenant.ghe.com", "pulls": {alias_oid: [merged_pr]}})
+
+        self.assertEqual(self.branches(), {"main"}, out)
+        self.assertIn(f"alias ({alias_oid[:7]})（PR #12 の head と一致。", out.split("=== 残した", 1)[0])
 
     def test_keeps_branch_when_head_sha_lookup_fails(self):
         self.branch("unknown", commits=1)

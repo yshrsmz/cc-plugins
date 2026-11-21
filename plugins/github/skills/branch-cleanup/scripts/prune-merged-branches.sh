@@ -82,7 +82,13 @@ fi
 
 # GitHub のリポジトリとして解決できるか。ここを確かめないと、GitLab や自前ホストの
 # origin でも fetch は通ってしまい、全ブランチが「PR が見つからない」と報告される。
-if ! gh repo view --json nameWithOwner >/dev/null 2>&1; then
+#
+# ホストもここで控える。`gh pr list` は remote からホストを選ぶが、`gh api` は
+# `{owner}/{repo}` しか埋めず、ホストは GH_HOST が無ければ github.com になる。
+# GitHub Enterprise（<tenant>.ghe.com）では 404 になり、全ブランチが照会失敗で残る。
+# GH_HOST が設定されていれば `gh repo view` はそのホストの remote だけを見る（合わなければ
+# 失敗する）ので、ここで得たホストは `gh pr list` の向き先と常に一致する。
+if ! gh_host="$(gh repo view --json url --jq '.url | split("/")[2]' 2>/dev/null)" || [ -z "$gh_host" ]; then
   echo "GitHub のリポジトリとして解決できません（origin が GitHub か確認してください）。" >&2
   exit 1
 fi
@@ -183,7 +189,7 @@ unpushed_count() {
 merged_pr_with_head() {
   local oid="$1" out
   if out="$(gh api "repos/{owner}/{repo}/commits/${oid}/pulls?per_page=100" \
-        --jq ".[] | select(.merged_at != null and .head.sha == \"${oid}\") | .number" 2>/dev/null)"; then
+        --hostname "$gh_host" --jq ".[] | select(.merged_at != null and .head.sha == \"${oid}\") | .number" 2>/dev/null)"; then
     printf '%s\n' "$out" | head -1
     return 0
   fi

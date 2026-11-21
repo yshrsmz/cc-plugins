@@ -112,11 +112,12 @@ ignore 済みファイル（`.env`、ローカル DB、認証情報）を置く�
 ```bash
 gh pr list --head <branch> --state merged --limit 50 --json headRefOid --jq '.[].headRefOid'
 git rev-parse "refs/heads/<branch>"
-gh api "repos/{owner}/{repo}/commits/<sha>/pulls?per_page=100" --jq '.[] | select(.merged_at != null and .head.sha == "<sha>") | .number'
+gh repo view --json url --jq '.url | split("/")[2]'
+gh api "repos/{owner}/{repo}/commits/<sha>/pulls?per_page=100" --hostname <host> --jq '.[] | select(.merged_at != null and .head.sha == "<sha>") | .number'
 git rev-list --count "refs/heads/<branch>" --not --remotes
 ```
 
-`<sha>` は `git rev-parse` で得た先端 SHA。3 つ目はブランチ名で PR が引けなかったときに使い、`No commit found for SHA`（HTTP 422）なら GitHub がそのコミットを知らない（push していない）ということで、マージ済み PR は無い。
+`<sha>` は `git rev-parse` で得た先端 SHA、`<host>` は `gh repo view` で得た remote のホスト。`gh api` は `--hostname` が無いと（`GH_HOST` も無ければ）github.com に問い合わせるので、GitHub Enterprise（`<tenant>.ghe.com`）のリポジトリでは 404 になる。4 つ目はブランチ名で PR が引けなかったときに使い、`No commit found for SHA`（HTTP 422）なら GitHub がそのコミットを知らない（push していない）ということで、マージ済み PR は無い。
 
 マージ済み PR の head と一致する（ブランチ名・先端 SHA のどちらで引いた PR でもよい）か、リモートに無いコミットが 0 件なら `git branch -D <branch>`。どちらでもなければ、リモートに無いコミットの件数を添えて判断を仰ぐ。
 
