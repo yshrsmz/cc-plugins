@@ -12,6 +12,10 @@ ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = ROOT / "plugins/github/skills/branch-cleanup/scripts/prune-merged-branches.sh"
 
 # `gh pr list --head <branch> --state <state>` を PR_FIXTURE（{state: {branch: [sha]}}）から答える。
+# `gh api repos/{owner}/{repo}/commits/<sha>/pulls` は PR_FIXTURE["pulls"]（{sha: [PR]}）から答え、
+# スクリプトの --jq と同じく「マージ済みで head.sha が一致する PR の番号」を出す。
+# 登録の無い SHA は実際の API と同じく、エラー本文（422）を stdout に出して失敗する。
+# PR_FIXTURE["api_fail"] に入れた SHA は 422 以外で失敗させる。
 # auth status と repo view は成功させる。
 FAKE_GH = """#!/usr/bin/env bash
 set -euo pipefail
@@ -35,6 +39,23 @@ import json, os, sys
 state, head = sys.argv[1], sys.argv[2]
 oids = json.loads(os.environ["PR_FIXTURE"]).get(state, {}).get(head, [])
 print(len(oids) if state == "open" else "\\n".join(oids))
+PY
+    ;;
+  "api repos/{owner}/{repo}/commits/"*)
+    python3 - "$2" <<'PY'
+import json, os, re, sys
+oid = re.match(r"repos/\\{owner\\}/\\{repo\\}/commits/([0-9a-f]+)/pulls", sys.argv[1]).group(1)
+fixture = json.loads(os.environ["PR_FIXTURE"])
+if oid in fixture.get("api_fail", []):
+    print('{"message":"Server Error","status":"500"}')
+    sys.exit(1)
+pulls = fixture.get("pulls", {})
+if oid not in pulls:
+    print('{"message":"No commit found for SHA: %s","status":"422"}' % oid)
+    sys.exit(1)
+for pr in pulls[oid]:
+    if pr.get("merged_at") is not None and pr["head"]["sha"] == oid:
+        print(pr["number"])
 PY
     ;;
   *) echo "unexpected gh call: $*" >&2; exit 1 ;;
@@ -141,6 +162,41 @@ class BranchCleanupTests(unittest.TestCase):
 
         self.assertIn("pushed (", out.split("=== 残した", 1)[0])
         self.assertIn("pushed", self.branches())
+
+    def test_deletes_branch_pushed_under_another_name_by_head_sha(self):
+        # `git push origin alias:pr-branch` で push し、PR がマージされてリモートの
+        # ブランチが消えた状態。ブランチ名では PR が引けず、リモートにもコミットが無い。
+        self.branch("alias", commits=1)
+        alias_oid = git(self.repo, "rev-parse", "alias")
+        dirty_wt = self.branch("alias-dirty-wt", commits=1, worktree=True)
+        dirty_oid = git(dirty_wt, "rev-parse", "HEAD")
+        (dirty_wt / "note.txt").write_text("work in progress\n")
+        self.branch("moved", commits=2)
+        moved_oid = git(self.repo, "rev-parse", "moved")
+        moved_pr_head = git(self.repo, "rev-parse", "moved~1")
+        merged_pr = lambda head, number: {"number": number, "merged_at": "2026-01-01T00:00:00Z", "head": {"sha": head}}
+
+        out = self.run_script({"pulls": {
+            alias_oid: [merged_pr(alias_oid, 12)],
+            dirty_oid: [merged_pr(dirty_oid, 13)],
+            # API は「関連する PR」を返す。head が先端と違う PR は一致として扱わない。
+            moved_oid: [merged_pr(moved_pr_head, 14)],
+        }})
+
+        self.assertEqual(self.branches(), {"main", "alias-dirty-wt", "moved"}, out)
+        deleted, kept = out.split("=== 残した", 1)
+        self.assertIn(f"alias ({alias_oid[:7]})（PR #12 の head と一致。PR のブランチ名はローカルと異なる）", deleted)
+        self.assertIn("alias-dirty-wt — worktree に変更が残っている", kept)
+        self.assertIn("moved — マージ済み PR が見つからない（リモートに無いコミット 2 件）", kept)
+
+    def test_keeps_branch_when_head_sha_lookup_fails(self):
+        self.branch("unknown", commits=1)
+        oid = git(self.repo, "rev-parse", "unknown")
+
+        out = self.run_script({"api_fail": [oid]})
+
+        self.assertIn("unknown", self.branches())
+        self.assertIn("unknown — gh の照会に失敗した（マージ済みか判定できていない）", out.split("=== 残した", 1)[1])
 
 
 if __name__ == "__main__":
