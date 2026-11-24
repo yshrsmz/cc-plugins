@@ -9,11 +9,13 @@
 #   `git branch --merged` にも出ない。`git diff main <branch>` も、main が先に進んでいれば
 #   差分を出すので判定に使えない。マージされたかどうかを知っているのは GitHub 側だけ。
 #   このスクリプトはマージ済み PR の head SHA とローカルの先端 SHA を照合して判定する。
-#   PR はブランチ名で引き、見つからなければ先端 SHA を head に持つ PR を引く（ローカルと
+#   PR はブランチ名で引き、先端が head と一致するか head の祖先（PR 側に後からコミットが
+#   積まれた）なら消す。見つからなければ先端 SHA を head に持つ PR を引く（ローカルと
 #   別の名前で push したブランチを拾うため）。
 #
 # 既定で削除まで行う。消すのは次のどちらかに当たるブランチだけ。
-#   - マージ済み PR の head SHA と先端が一致する（PR のブランチ名がローカルと違ってもよい）
+#   - マージ済み PR の head SHA と先端が一致する（PR のブランチ名がローカルと違ってもよい）か、
+#     ブランチ名で引いたマージ済み PR の head の祖先である
 #   - コミットがすべてリモートにあり、worktree に未コミットの変更が無く、open な PR も無い
 #     （マージ済みと確定できなくても、消して失うものが無い）
 # それ以外は残し、理由と「消したら失うものの量」を、少ない順に報告する。何が消えるかを
@@ -39,8 +41,9 @@ usage() {
   bash prune-merged-branches.sh [--dry-run] [--keep-worktrees]
 
 消すのは「マージ済み PR の head SHA と先端が一致するブランチ」（PR のブランチ名が
-ローカルと違ってもよい）と、「コミットがすべてリモートにあり、worktree に未コミットの
-変更も open な PR も無いブランチ」だけ。それ以外は残し、理由と消したら失うものの量を
+ローカルと違ってもよい）、「先端がマージ済み PR の head の祖先であるブランチ」と、
+「コミットがすべてリモートにあり、worktree に未コミットの変更も open な PR も無い
+ブランチ」だけ。それ以外は残し、理由と消したら失うものの量を
 報告する。既定ブランチと現在のブランチ、現在いる
 worktree、メインの worktree、リモートのブランチには触らない。
 
@@ -201,6 +204,71 @@ merged_pr_with_head() {
   return 1
 }
 
+# ローカルの先端 $1 が PR head $2 の祖先（同一を含む）なら yes、そうでなければ no を出す。
+# 照会に失敗したら 1 を返す（祖先でないと誤判定しない）。
+#
+# PR head がローカルに無いことはよくある。PR ブランチに別の場所（別の worktree、GitHub 上）で
+# レビュー修正が積まれ、それを pull しないまま squash merge されてリモートのブランチが
+# 消えると、PR head はどのリモート追跡ブランチにも残らない。そのときは GitHub の compare で見る。
+is_ancestor_of() {
+  local oid="$1" head="$2" out rc
+  if git cat-file -e "${head}^{commit}" 2>/dev/null; then
+    git merge-base --is-ancestor "$oid" "$head"
+    rc=$?
+    case "$rc" in
+      0) echo yes ;;
+      1) echo no ;;
+      *) return 1 ;;
+    esac
+    return 0
+  fi
+
+  if out="$(gh api "repos/{owner}/{repo}/compare/${oid}...${head}" --hostname "$gh_host" \
+        --jq 'if .behind_by == 0 and (.status == "ahead" or .status == "identical") then "yes" else "no" end' 2>/dev/null)"; then
+    printf '%s\n' "$out"
+    return 0
+  fi
+  case "$out" in
+    *"No commit found for SHA"*)
+      echo no
+      return 0
+      ;;
+    *'"status":"404"'*) ;;
+    *) return 1 ;;
+  esac
+
+  # compare は GitHub が知らないコミットを 404 で返す。ホストやリポジトリの取り違えも 404 に
+  # なるので、ローカルの先端を GitHub が知らない（422）と確かめられたときだけ「祖先でない」とする。
+  if out="$(gh api "repos/{owner}/{repo}/commits/${oid}" --hostname "$gh_host" --jq .sha 2>/dev/null)"; then
+    return 1
+  fi
+  case "$out" in
+    *"No commit found for SHA"*)
+      echo no
+      return 0
+      ;;
+  esac
+  return 1
+}
+
+# 「番号 head SHA」の行の並びから、ローカルの先端 $1 を head の祖先に持つ PR の番号を出す
+# （無ければ何も出さない）。どれかの照会に失敗し、ほかに祖先と分かった PR も無ければ 1 を返す。
+merged_pr_containing() {
+  local oid="$1" prs="$2" number head answer failed=0
+  # 読み込みは fd 3 から。gh がループの stdin を食わないようにする。
+  while read -r number head <&3; do
+    if ! answer="$(is_ancestor_of "$oid" "$head")"; then
+      failed=1
+      continue
+    fi
+    if [ "$answer" = "yes" ]; then
+      printf '%s\n' "$number"
+      return 0
+    fi
+  done 3<<<"$prs"
+  return "$failed"
+}
+
 deleted=""
 # 残したブランチは「失うものの量<TAB>行」で貯め、最後に少ない順に並べる。
 # 失うものが少ないものから判断できるようにするため。
@@ -291,8 +359,8 @@ for ref in $(git for-each-ref --format='%(refname)' refs/heads/); do
   #
   # ブランチ 1 本につき 1 回 API を叩く。`--limit 200` の 1 回にまとめると速いが、
   # 上限を超えた古い PR が黙って落ちて「PR が無い」と誤判定する。正しさを取る。
-  if ! merged_oids="$(gh pr list --head "$branch" --state merged --limit 50 \
-        --json headRefOid --jq '.[].headRefOid' 2>/dev/null)"; then
+  if ! merged_prs="$(gh pr list --head "$branch" --state merged --limit 50 \
+        --json number,headRefOid --jq '.[] | "\(.number) \(.headRefOid)"' 2>/dev/null)"; then
     # 空の結果と失敗を混同しない。混同すると、認証切れやリポジトリ解決の失敗が
     # 「PR が見つからない（= push していない作業ブランチ）」と報告される。
     keep 0 "$branch — gh の照会に失敗した（マージ済みか判定できていない）"
@@ -306,9 +374,22 @@ for ref in $(git for-each-ref --format='%(refname)' refs/heads/); do
 
   merged=0
   merged_why=""
-  if [ -n "$merged_oids" ] && printf '%s\n' "$merged_oids" | grep -qx "$local_oid"; then
+  if [ -n "$merged_prs" ] && printf '%s\n' "$merged_prs" | awk -v oid="$local_oid" '$2 == oid { found = 1 } END { exit !found }'; then
     merged=1
-  else
+  elif [ -n "$merged_prs" ]; then
+    # 先端が PR head の祖先なら、PR 側に後からコミットが積まれてマージされただけで、
+    # ローカルにしか無い変更は無い。
+    if ! ancestor_pr="$(merged_pr_containing "$local_oid" "$merged_prs")"; then
+      keep 0 "$branch — gh の照会に失敗した（マージ済みか判定できていない）"
+      continue
+    fi
+    if [ -n "$ancestor_pr" ]; then
+      merged=1
+      merged_why="（PR #${ancestor_pr} の head の祖先。PR 側に後からコミットが積まれてマージ済み）"
+    fi
+  fi
+
+  if [ "$merged" -eq 0 ]; then
     # ブランチ名で見つからなくても、先端をそのまま head に持つマージ済み PR があれば
     # マージ済み。ローカルとは別の名前で push した（`git push origin foo:bar`）ブランチは
     # ブランチ名では引けず、マージ後にリモートのブランチも消えるので、下の
@@ -356,15 +437,15 @@ for ref in $(git for-each-ref --format='%(refname)' refs/heads/); do
   weight=$(( ${unpushed//\?/1} + ${dirty//-/0} ))
   note="$(loss_note "$unpushed" "$dirty")"
 
-  if [ -z "$merged_oids" ]; then
+  if [ -z "$merged_prs" ]; then
     keep "$weight" "$branch — マージ済み PR が見つからない${note}"
     continue
   fi
 
   # PR の head SHA も出す。上位がブランチの中身を見るとき、この SHA を起点にしないと
   # squash merge では「ブランチの全履歴が未マージ」に見える。
-  pr_oid="$(printf '%s\n' "$merged_oids" | head -1)"
-  keep "$weight" "$branch — マージ済み PR はあるが先端 SHA が一致しない（ローカル ${local_oid:0:7} / PR head ${pr_oid:0:7}）${note}"
+  pr_oid="$(printf '%s\n' "$merged_prs" | awk 'NR == 1 { print $2 }')"
+  keep "$weight" "$branch — マージ済み PR はあるが先端 SHA が一致しない（PR head の祖先でもない。ローカル ${local_oid:0:7} / PR head ${pr_oid:0:7}）${note}"
 done
 
 if [ "$dry_run" -eq 1 ]; then
